@@ -1,0 +1,76 @@
+@if (loadingScene()) {
+  <section class="viewer-empty card" role="status">
+    <p class="eyebrow">Scene viewer</p>
+    <h1>Preparing scene</h1>
+    <p>Connecting to the project library…</p>
+  </section>
+} @else if (error()) {
+  <section class="viewer-empty card" aria-labelledby="viewer-error-title" role="alert">
+    <p class="eyebrow">Scene viewer</p>
+    <h1 id="viewer-error-title">Scene unavailable</h1>
+    <p>{{ error() }}</p>
+    <a class="btn btn-primary" routerLink="/scenes">Browse scenes</a>
+  </section>
+} @else if (scene(); as selectedScene) {
+  <section class="viewer-page" aria-labelledby="viewer-title">
+    <header class="page-title-row">
+      <div>
+        <p class="eyebrow">Scene viewer</p>
+        <h1 id="viewer-title">{{ selectedScene.title }}</h1>
+        <p class="subtitle">{{ selectedScene.description }}</p>
+      </div>
+      <a class="btn btn-secondary viewer-back-link" routerLink="/scenes">All scenes</a>
+    </header>
+
+    <section class="scene-card card" aria-labelledby="scene-view-title">
+      <header class="scene-heading">
+        <div>
+          <p class="scene-kicker">{{ selectedScene.sourceLabel }}</p>
+          <h2 id="scene-view-title">{{ selectedScene.title }}</h2>
+        </div>
+        <span class="scene-format">
+          @if (selectedScene.format === 'HTML') {
+            SuperSplat HTML viewer
+          } @else {
+            {{ selectedScene.format }} Gaussian splat
+          }
+        </span>
+      </header>
+      @if (signedSplatUrl(); as splatUrl) {
+        @if (selectedScene.format === 'HTML') {
+          <iframe
+            class="supersplat-frame"
+            [src]="trustedHtmlUrl()"
+            [title]="selectedScene.title + ' SuperSplat viewer'"
+            sandbox="allow-scripts allow-pointer-lock"
+            referrerpolicy="origin"
+          ></iframe>
+        } @else {
+          <app-splat-viewer
+            [splatUrl]="splatUrl"
+            [splatFileName]="selectedScene.title + '.' + selectedScene.format.toLowerCase()"
+          />
+        }
+      } @else {
+        <div class="viewer-loading" role="status">Preparing secure scene access…</div>
+      }
+      <footer class="scene-caption">
+        <span>
+          @if (selectedScene.format === 'HTML') {
+            Embedded SuperSplat standalone export
+          } @else {
+            Drag to explore · Scroll to move closer
+          }
+        </span>
+        <span>Interactive visualisation by AI3D</span>
+      </footer>
+    </section>
+  </section>
+} @else {
+  <section class="viewer-empty card" aria-labelledby="viewer-empty-title">
+    <p class="eyebrow">Scene viewer</p>
+    <h1 id="viewer-empty-title">Choose a scene to view</h1>
+    <p>Select a splat from the Scenes tab to open it here.</p>
+    <a class="btn btn-primary" routerLink="/scenes">Browse scenes</a>
+  </section>
+}

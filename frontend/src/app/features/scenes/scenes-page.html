@@ -1,0 +1,49 @@
+<section class="scenes-page" aria-labelledby="scenes-title">
+  <header class="page-title-row">
+    <div>
+      <p class="eyebrow">Immersive project studies</p>
+      <h1 id="scenes-title">Scenes</h1>
+      <p class="subtitle">Choose a Gaussian splat or SuperSplat export to explore.</p>
+    </div>
+    <span class="page-mark">
+      {{ catalog.scenes().length }} scene{{ catalog.scenes().length === 1 ? '' : 's' }}
+    </span>
+  </header>
+
+  @if (catalog.loading()) {
+    <div class="scenes-message card" role="status">Loading scenes from the project library…</div>
+  } @else if (catalog.error()) {
+    <div class="scenes-message card" role="alert">
+      <h2>Scenes could not be loaded</h2>
+      <p>{{ catalog.error() }}</p>
+      <button class="btn btn-secondary" type="button" (click)="retry()">Try again</button>
+    </div>
+  } @else {
+    <div class="scene-grid" aria-label="Available splat scenes">
+      @for (scene of catalog.scenes(); track scene.id) {
+        <article class="scene-option card">
+          <div class="scene-option-preview" aria-hidden="true">
+            <span class="scene-preview-orb"></span>
+            <span class="scene-option-format">{{ scene.format }}</span>
+          </div>
+          <div class="scene-option-content">
+            <p class="scene-source">{{ scene.sourceLabel }}</p>
+            <h2>{{ scene.title }}</h2>
+            <p class="scene-description">{{ scene.description }}</p>
+            <a class="btn btn-primary scene-open-link" [routerLink]="['/viewer', scene.id]">
+              View scene
+            </a>
+          </div>
+        </article>
+      } @empty {
+        <div class="scenes-empty card">
+          <h2>No scenes available</h2>
+          <p>
+            Supported .PLY, .SOG, .SPZ, .KSPLAT, or SuperSplat .HTML files in the Bluey library will
+            appear here.
+          </p>
+        </div>
+      }
+    </div>
+  }
+</section>

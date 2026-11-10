@@ -6,7 +6,7 @@
   position: relative;
   min-height: min(68vh, 720px);
   overflow: hidden;
-  background: #e9e3ef;
+  background: var(--color-primary-light);
 }
 
 @media (max-width: 650px) {

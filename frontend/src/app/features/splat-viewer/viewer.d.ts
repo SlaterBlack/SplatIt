@@ -1,6 +1,7 @@
 export interface SplatViewerConfig {
   container: HTMLElement;
   splatUrl: string;
+  splatFileName: string;
   initialCamera?: {
     position: [number, number, number];
     target: [number, number, number];
@@ -8,6 +9,8 @@ export interface SplatViewerConfig {
   };
   background?: string;
   accentColor?: string;
+  minDistance?: number;
+  maxDistance?: number;
   splatTransform?: {
     position?: [number, number, number];
     quaternion?: [number, number, number, number];

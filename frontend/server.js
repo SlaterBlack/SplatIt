@@ -8,7 +8,7 @@ if (fs.existsSync(envPath)) {
   process.loadEnvFile(envPath);
 }
 
-const HOST = process.env.FRONTEND_HOST?.trim() || '127.0.0.1';
+const HOST = process.env.FRONTEND_HOST?.trim() || '0.0.0.0';
 const PORT = Number(process.env.FRONTEND_PORT ?? 2404);
 const API_TARGET = process.env.STOREIT_API_URL?.trim();
 const BROWSER_DIR = path.join(__dirname, 'dist', 'splatit', 'browser');
@@ -37,6 +37,14 @@ app.use(
     target: API_TARGET.replace(/\/+$/, ''),
     changeOrigin: true,
     pathRewrite: (requestPath) => `/api${requestPath}`,
+    on: {
+      proxyReq(proxyReq, req) {
+        const clientIp = req.socket.remoteAddress;
+        if (clientIp) {
+          proxyReq.setHeader('X-Forwarded-For', clientIp);
+        }
+      },
+    },
   }),
 );
 app.use(express.static(BROWSER_DIR));
