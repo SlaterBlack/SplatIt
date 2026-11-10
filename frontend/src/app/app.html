@@ -1,0 +1,36 @@
+<header class="navbar">
+  <a class="navbar-brand" href="/" aria-label="SplatIt home">
+    <span class="brand-mark" aria-hidden="true">S</span>
+    <span class="brand-name">Splat<span class="brand-accent">It</span></span>
+  </a>
+  <nav class="navbar-links" aria-label="Main navigation">
+    <a class="is-active" href="#scenes" aria-current="page">Scenes</a>
+  </nav>
+  <span class="navbar-caption">Architectural visualisation</span>
+</header>
+
+<main class="page-content" id="scenes">
+  <header class="page-title-row">
+    <div>
+      <div class="eyebrow">Immersive project studies</div>
+      <h1>Explore in 3D</h1>
+      <p class="subtitle">Move through the details, materials, and atmosphere of a place.</p>
+    </div>
+    <span class="page-mark" aria-hidden="true">01 / 01</span>
+  </header>
+
+  <section class="scene-card card" aria-labelledby="scene-title">
+    <header class="scene-heading">
+      <div>
+        <p class="scene-kicker">Featured scene</p>
+        <h2 id="scene-title">A study in light</h2>
+      </div>
+      <span class="scene-format">3D Gaussian splat</span>
+    </header>
+    <app-splat-viewer />
+    <footer class="scene-caption">
+      <span>Drag to explore · Scroll to move closer</span>
+      <span>Interactive visualisation by AI3D</span>
+    </footer>
+  </section>
+</main>
