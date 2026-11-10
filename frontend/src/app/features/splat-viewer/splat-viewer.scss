@@ -1,0 +1,16 @@
+:host {
+  display: block;
+}
+
+.splat-viewer-stage {
+  position: relative;
+  min-height: min(68vh, 720px);
+  overflow: hidden;
+  background: #e9e3ef;
+}
+
+@media (max-width: 650px) {
+  .splat-viewer-stage {
+    min-height: 60vh;
+  }
+}

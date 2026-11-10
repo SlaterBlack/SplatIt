@@ -1,0 +1,113 @@
+.card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--color-secondary) 10%, var(--color-surface));
+  box-shadow: var(--shadow-md);
+}
+
+.btn {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  padding: 0.5rem 0.8rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.18s ease;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+    box-shadow: none;
+  }
+}
+
+.btn-primary {
+  background: var(--color-accent);
+  color: var(--color-contrast);
+}
+
+.btn-secondary {
+  border-color: var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.splat-viewer {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: inherit;
+  overflow: hidden;
+}
+
+.splat-viewer canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.splat-viewer-status {
+  position: absolute;
+  z-index: 1;
+  right: 1rem;
+  bottom: 1rem;
+  left: 1rem;
+  display: grid;
+  gap: 0.55rem;
+  width: min(100% - 2rem, 22rem);
+  padding: 0.8rem 1rem;
+  border: 1px solid color-mix(in srgb, var(--color-secondary) 70%, transparent);
+  border-radius: var(--radius-md);
+  background: rgb(255 253 249 / 92%);
+  box-shadow: var(--shadow-md);
+  color: var(--color-text);
+  font-size: 0.84rem;
+  backdrop-filter: blur(12px);
+}
+
+.splat-viewer-status[hidden] {
+  display: none;
+}
+
+.splat-viewer-status progress {
+  width: 100%;
+  height: 0.35rem;
+  overflow: hidden;
+  border: 0;
+  border-radius: 999px;
+  background: var(--color-primary-light);
+  accent-color: var(--color-accent);
+}
+
+.splat-viewer-status progress::-webkit-progress-bar {
+  border-radius: inherit;
+  background: var(--color-primary-light);
+}
+
+.splat-viewer-status progress::-webkit-progress-value,
+.splat-viewer-status progress::-moz-progress-bar {
+  border-radius: inherit;
+  background: var(--color-accent);
+}
+
+.splat-viewer-status.has-error {
+  border-color: var(--color-danger);
+}
