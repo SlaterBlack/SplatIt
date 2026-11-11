@@ -244,6 +244,9 @@ export function createSplatViewer(config) {
       ui = uiModule.createViewerUI(container, {
         getMode: controls.getMode,
         resetView: controls.resetView,
+        setColorAdjustments({ brightness, contrast, saturation }) {
+          renderer.domElement.style.filter = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`;
+        },
         setMode: controls.setMode,
       });
 

@@ -144,7 +144,8 @@ grid can populate.
       tokens, and Stage 1 lazy-loaded rendering
 - [x] Orbit controls with damping, zoom limits, touch gestures, and focus picking
 - [x] Fly mode with keyboard movement and adjustable scroll-wheel speed
-- [x] Viewer toolbar, fullscreen, reset/frame shortcuts, and expandable controls legend
+- [x] Viewer toolbar, fullscreen, reset/frame shortcuts, expandable controls legend, and view-only
+      brightness, contrast, and saturation adjustments
 - [ ] Viewer camera presets
 - [x] StoreIt scene listing and signed asset URLs, origin allowlist, rate
       limiting, and deployment guidance

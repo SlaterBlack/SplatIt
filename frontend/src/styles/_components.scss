@@ -183,7 +183,8 @@
 }
 
 .splat-viewer-legend,
-.splat-viewer-info {
+.splat-viewer-info,
+.splat-viewer-color-panel {
   position: absolute;
   right: 1rem;
   bottom: 4.8rem;
@@ -206,7 +207,8 @@
 }
 
 .splat-viewer-legend[hidden],
-.splat-viewer-info[hidden] {
+.splat-viewer-info[hidden],
+.splat-viewer-color-panel[hidden] {
   display: none;
 }
 
@@ -279,6 +281,55 @@
   font-size: 0.8rem;
 }
 
+.splat-viewer-color-panel {
+  display: grid;
+  gap: 0.65rem;
+  width: min(280px, calc(100% - 2rem));
+}
+
+.splat-viewer-color-note {
+  margin: 0;
+  color: rgb(255 250 240 / 72%);
+  font-size: 0.72rem;
+}
+
+.splat-viewer-color-control {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.25rem 0.75rem;
+  color: #fffaf0;
+  font-size: 0.78rem;
+
+  output {
+    color: rgb(255 250 240 / 72%);
+    font-variant-numeric: tabular-nums;
+  }
+
+  input {
+    grid-column: 1 / -1;
+    width: 100%;
+    margin: 0;
+    accent-color: var(--color-accent);
+  }
+}
+
+.splat-viewer-color-reset {
+  justify-self: end;
+  min-height: 30px;
+  padding: 0.25rem 0.65rem;
+  border: 1px solid rgb(255 255 255 / 24%);
+  border-radius: var(--radius-sm);
+  background: rgb(255 255 255 / 10%);
+  color: #fffaf0;
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    background: rgb(255 255 255 / 18%);
+  }
+}
+
 .splat-viewer:fullscreen {
   width: 100vw;
   height: 100vh;
@@ -292,9 +343,15 @@
     right: 0.75rem;
     bottom: 0.75rem;
     transform: none;
-    justify-content: center;
+    justify-content: flex-start;
     gap: 0.15rem;
     padding: 0.25rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .splat-viewer-toolbar::-webkit-scrollbar {
+    display: none;
   }
 
   .splat-viewer-tool {
@@ -304,7 +361,8 @@
   }
 
   .splat-viewer-legend,
-  .splat-viewer-info {
+  .splat-viewer-info,
+  .splat-viewer-color-panel {
     right: 0.75rem;
     bottom: 4.4rem;
     width: calc(100% - 1.5rem);

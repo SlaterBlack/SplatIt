@@ -18,6 +18,12 @@ const icons = {
     ['path', { d: 'M4 11a8 8 0 1 1 2 6' }],
     ['path', { d: 'M4 5v6h6' }],
   ],
+  color: [
+    ['path', { d: 'M4 6h16M4 12h16M4 18h16' }],
+    ['circle', { cx: '8', cy: '6', r: '2' }],
+    ['circle', { cx: '15', cy: '12', r: '2' }],
+    ['circle', { cx: '10', cy: '18', r: '2' }],
+  ],
   controls: [
     ['rect', { x: '3', y: '5', width: '18', height: '14', rx: '2' }],
     ['path', { d: 'M7 9h2m2 0h2m2 0h2M7 13h2m2 0h2m2 0h2' }],
@@ -43,21 +49,12 @@ export function createViewerUI(container, actions) {
   const flyButton = createButton('fly', 'Fly mode', () => actions.setMode('fly'));
   const walkButton = createButton('walk', 'Walk mode', () => actions.setMode('walk'));
   const resetButton = createButton('reset', 'Reset camera', actions.resetView);
+  const colorButton = createButton('color', 'Color settings', toggleColorSettings);
   const controlsButton = createButton('controls', 'Toggle controls legend', toggleControls);
   const infoButton = createButton('info', 'Toggle scene information', toggleInfo);
   const fullscreenButton = createButton('fullscreen', 'Toggle fullscreen', toggleFullscreen);
   controlsButton.setAttribute('aria-controls', `splat-viewer-controls-legend-${viewerId}`);
   infoButton.setAttribute('aria-controls', `splat-viewer-info-${viewerId}`);
-
-  toolbar.append(
-    orbitButton,
-    flyButton,
-    walkButton,
-    resetButton,
-    controlsButton,
-    infoButton,
-    fullscreenButton,
-  );
 
   const legend = document.createElement('section');
   legend.className = 'splat-viewer-legend';
@@ -87,11 +84,96 @@ export function createViewerUI(container, actions) {
   info.setAttribute('role', 'status');
   info.textContent = 'Walk mode moves at the current height and does not have collision detection.';
 
-  root.append(legend, info, toolbar);
+  const colorPanel = document.createElement('section');
+  colorPanel.className = 'splat-viewer-color-panel';
+  colorPanel.id = `splat-viewer-color-settings-${viewerId}`;
+  colorPanel.hidden = true;
+  colorPanel.setAttribute('role', 'group');
+  colorPanel.setAttribute('aria-labelledby', `splat-viewer-color-title-${viewerId}`);
+  colorButton.setAttribute('aria-controls', colorPanel.id);
+
+  const colorHeader = document.createElement('header');
+  colorHeader.className = 'splat-viewer-legend-header';
+  const colorTitle = document.createElement('h3');
+  colorTitle.id = `splat-viewer-color-title-${viewerId}`;
+  colorTitle.textContent = 'Color settings';
+  const closeColorSettings = document.createElement('button');
+  closeColorSettings.type = 'button';
+  closeColorSettings.className = 'splat-viewer-legend-close';
+  closeColorSettings.setAttribute('aria-label', 'Close color settings');
+  closeColorSettings.textContent = '×';
+  closeColorSettings.addEventListener('click', () => toggleColorSettings(false));
+  colorHeader.append(colorTitle, closeColorSettings);
+
+  const colorValues = { brightness: 100, contrast: 100, saturation: 100 };
+  const colorControls = [];
+  const colorControlDefinitions = [
+    { key: 'brightness', label: 'Brightness', min: 50, max: 150 },
+    { key: 'contrast', label: 'Contrast', min: 50, max: 150 },
+    { key: 'saturation', label: 'Saturation', min: 0, max: 200 },
+  ];
+  for (const definition of colorControlDefinitions) {
+    const row = document.createElement('label');
+    row.className = 'splat-viewer-color-control';
+    const label = document.createElement('span');
+    label.textContent = definition.label;
+    const output = document.createElement('output');
+    output.textContent = '100%';
+    const range = document.createElement('input');
+    range.type = 'range';
+    range.min = String(definition.min);
+    range.max = String(definition.max);
+    range.step = '1';
+    range.value = '100';
+    range.setAttribute('aria-label', definition.label);
+    range.addEventListener('input', () => {
+      colorValues[definition.key] = Number(range.value);
+      output.textContent = `${range.value}%`;
+      actions.setColorAdjustments({ ...colorValues });
+    });
+    row.append(label, output, range);
+    colorControls.push({ key: definition.key, range, output });
+    colorPanel.append(row);
+  }
+
+  const resetColorSettings = document.createElement('button');
+  resetColorSettings.className = 'splat-viewer-color-reset';
+  resetColorSettings.type = 'button';
+  resetColorSettings.textContent = 'Reset';
+  resetColorSettings.addEventListener('click', () => {
+    for (const control of colorControls) {
+      colorValues[control.key] = 100;
+      control.range.value = '100';
+      control.output.textContent = '100%';
+    }
+    actions.setColorAdjustments({ ...colorValues });
+  });
+  colorPanel.prepend(colorHeader);
+  const colorNote = document.createElement('p');
+  colorNote.className = 'splat-viewer-color-note';
+  colorNote.textContent = 'These adjustments affect this view only.';
+  colorPanel.append(colorNote);
+  colorPanel.append(resetColorSettings);
+
+  toolbar.append(
+    orbitButton,
+    flyButton,
+    walkButton,
+    resetButton,
+    colorButton,
+    controlsButton,
+    infoButton,
+    fullscreenButton,
+  );
+  root.append(legend, info, colorPanel, toolbar);
   container.append(root);
 
   function toggleControls(force) {
     legend.hidden = force === undefined ? !legend.hidden : !force;
+    if (!legend.hidden) {
+      toggleInfo(false);
+      toggleColorSettings(false);
+    }
     controlsButton.setAttribute('aria-expanded', String(!legend.hidden));
     if (!legend.hidden) {
       closeLegend.focus({ preventScroll: true });
@@ -102,7 +184,25 @@ export function createViewerUI(container, actions) {
 
   function toggleInfo(force) {
     info.hidden = force === undefined ? !info.hidden : !force;
+    if (!info.hidden) {
+      toggleControls(false);
+      toggleColorSettings(false);
+    }
     infoButton.setAttribute('aria-expanded', String(!info.hidden));
+  }
+
+  function toggleColorSettings(force) {
+    colorPanel.hidden = force === undefined ? !colorPanel.hidden : !force;
+    if (!colorPanel.hidden) {
+      toggleControls(false);
+      toggleInfo(false);
+    }
+    colorButton.setAttribute('aria-expanded', String(!colorPanel.hidden));
+    if (!colorPanel.hidden) {
+      colorControls[0].range.focus({ preventScroll: true });
+    } else if (document.activeElement === closeColorSettings) {
+      colorButton.focus({ preventScroll: true });
+    }
   }
 
   async function toggleFullscreen() {
