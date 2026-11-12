@@ -1,5 +1,71 @@
-<div
-  #viewerContainer
-  class="splat-viewer-stage"
-  aria-label="Interactive Gaussian splat scene"
-></div>
+<div class="splat-viewer-stage" [style.backgroundColor]="backgroundColor()">
+  <div
+    #viewerContainer
+    class="splat-viewer-canvas"
+    aria-label="Interactive Gaussian splat scene"
+  ></div>
+  @if (isLoaded()) {
+    <div class="splat-viewer-xr-controls" aria-label="Immersive viewing controls">
+      @if (xrMode(); as activeMode) {
+        <button
+          class="splat-viewer-xr-button"
+          type="button"
+          [disabled]="xrRequestPending()"
+          (click)="endXR()"
+        >
+          @if (activeMode === 'ar') {
+            Exit AR
+          } @else {
+            Exit VR
+          }
+        </button>
+      } @else {
+        @if (canStartAR()) {
+          <button
+            class="splat-viewer-xr-button"
+            type="button"
+            [disabled]="xrRequestPending()"
+            (click)="startXR('ar')"
+          >
+            View in AR
+          </button>
+        }
+        @if (canStartVR()) {
+          <button
+            class="splat-viewer-xr-button"
+            type="button"
+            [disabled]="xrRequestPending()"
+            (click)="startXR('vr')"
+          >
+            Enter VR
+          </button>
+        }
+        @if (!canStartAR() && !canStartVR()) {
+          <p class="splat-viewer-xr-note" role="status">
+            @if (hasAR() || hasVR()) {
+              Immersive viewing is supported, but not on the current renderer. Check the SuperSplat
+              controls for an XR-compatible option.
+            } @else {
+              AR and VR need a compatible device, browser, and secure connection (HTTPS).
+            }
+          </p>
+        }
+      }
+    </div>
+  }
+  @if (xrError(); as error) {
+    <p class="splat-viewer-xr-error" role="alert">{{ error }}</p>
+  }
+</div>
+@if (errorMessage(); as error) {
+  <p class="splat-viewer-error" role="alert">{{ error }}</p>
+}
+@if (isLoaded() && !walkAllowed()) {
+  <p class="splat-viewer-capability-note" role="status">
+    @if (hasCollision()) {
+      Walk mode is unavailable because this scene is too small for walking.
+    } @else {
+      Walk mode needs a collision sidecar for this scene.
+    }
+  </p>
+}

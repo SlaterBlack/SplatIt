@@ -49,6 +49,8 @@
           <app-splat-viewer
             [splatUrl]="splatUrl"
             [splatFileName]="selectedScene.title + '.' + selectedScene.format.toLowerCase()"
+            [collisionUrl]="signedCollisionUrl()"
+            [backgroundColor]="appearance.viewerBackgroundColor()"
           />
         }
       } @else {

@@ -1,0 +1,66 @@
+<div class="appearance-backdrop" (click)="close.emit()">
+  <section
+    class="appearance-dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="appearance-title"
+    (click)="$event.stopPropagation()"
+  >
+    <h2 id="appearance-title">Appearance</h2>
+    <p>Choose the background color behind the 3D scene.</p>
+    <div class="background-color-field">
+      <span>Viewer background</span>
+      <div class="background-select">
+        <button
+          class="background-select-trigger"
+          type="button"
+          aria-haspopup="menu"
+          aria-label="Choose viewer background"
+          [attr.aria-expanded]="isBackgroundMenuOpen()"
+          (click)="toggleBackgroundMenu($event)"
+        >
+          <span
+            class="background-swatch"
+            [style.background-color]="appearance.viewerBackgroundColor()"
+            aria-hidden="true"
+          ></span>
+          <span>{{ appearance.viewerBackgroundName() }}</span>
+          <span class="background-select-chevron" aria-hidden="true">⌄</span>
+        </button>
+        @if (isBackgroundMenuOpen()) {
+          <div
+            class="background-options"
+            role="menu"
+            aria-label="Viewer background colors"
+            [style.top.px]="backgroundMenuPosition().top"
+            [style.left.px]="backgroundMenuPosition().left"
+            [style.width.px]="backgroundMenuPosition().width"
+          >
+            @for (option of appearance.backgroundOptions; track option.value) {
+              <button
+                class="background-option"
+                type="button"
+                role="menuitemradio"
+                [attr.aria-label]="option.name"
+                [attr.aria-checked]="
+                  appearance.viewerBackgroundColor() === option.value ? 'true' : 'false'
+                "
+                (click)="selectViewerBackground(option.value)"
+              >
+                <span
+                  class="background-swatch"
+                  [style.background-color]="option.value"
+                  aria-hidden="true"
+                ></span>
+                <span>{{ option.name }}</span>
+              </button>
+            }
+          </div>
+        }
+      </div>
+    </div>
+    <div class="appearance-actions">
+      <button class="btn btn-primary" type="button" (click)="close.emit()">Done</button>
+    </div>
+  </section>
+</div>

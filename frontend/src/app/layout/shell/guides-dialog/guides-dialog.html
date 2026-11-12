@@ -1,0 +1,209 @@
+<div class="guides-backdrop" (click)="close.emit()">
+  <section
+    class="guides-dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="guides-title"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="guides-heading">
+      <h2 id="guides-title">Guides</h2>
+      <button class="guides-close" type="button" aria-label="Close guides" (click)="close.emit()">
+        &times;
+      </button>
+    </div>
+    <div class="guide-list">
+      @for (guide of guides; track guide.id) {
+        <section class="guide-item">
+          <button
+            class="guide-title"
+            type="button"
+            [attr.data-guide]="guide.id"
+            [attr.aria-expanded]="selectedGuide() === guide.id"
+            [attr.aria-controls]="'guide-content-' + guide.id"
+            (click)="toggleGuide(guide.id)"
+          >
+            <span>{{ guide.title }}</span>
+            <span class="guide-chevron" aria-hidden="true">⌄</span>
+          </button>
+          @if (selectedGuide() === guide.id) {
+            <article class="guide-content" [id]="'guide-content-' + guide.id">
+              @if (guide.id === 'collision') {
+                <h3>How to create collision for Gaussian Splat</h3>
+                <p>
+                  Gaussian splats are visual data, not solid geometry. SplatIt loads collision from
+                  a separate <code>.collision.glb</code> file; create it offline with PlayCanvas
+                  SplatTransform.
+                </p>
+                <ol>
+                  <li>
+                    <strong>Prepare the source file.</strong> Work from a copy of your scene in a
+                    writable folder. SplatTransform accepts formats including <code>.ply</code> and
+                    <code>.sog</code>. Install the CLI with
+                    <code>npm install -g @playcanvas/splat-transform</code>, then verify it with
+                    <code>splat-transform --version</code>.
+                  </li>
+                  <li>
+                    <strong>Choose a seed point.</strong> Find a clear, walkable floor location
+                    inside the room and note its world-space X,Y,Z coordinates in the scene's own
+                    units (typically meters). The example below uses <code>0,1,0</code> only as a
+                    placeholder; replace it with a point that is actually on the floor area in your
+                    scene. The default walk capsule is about 1.6 units tall and 0.2 units in radius,
+                    so leave enough room around the point.
+                  </li>
+                  <li>
+                    <strong>Generate the collision mesh.</strong> For an enclosed indoor scan, run:
+                    <pre><code>splat-transform ".\scene.sog" --filter-cluster --seed-pos "0,0,0" ".\scene.voxel.json" --voxel-external-fill --voxel-carve --collision-mesh smooth</code></pre>
+                    This PowerShell example uses <code>scene.sog</code>; replace
+                    <code>"0,0,0"</code> with your seed coordinates. Keep the input and output
+                    basenames the same so the generated mesh is named
+                    <code>scene.collision.glb</code>. For outdoor terrain, use
+                    <code>--voxel-floor-fill</code> instead of
+                    <code>--voxel-external-fill</code> and omit <code>--voxel-carve</code>.
+                  </li>
+                  <li>
+                    <strong>Install the sidecar.</strong> Copy
+                    <code>scene.collision.glb</code> beside the original splat in the scene library.
+                    The basename must match exactly, including capitalization; for example,
+                    <code>Building.sog</code> pairs with <code>Building.collision.glb</code>.
+                    SplatIt only needs the GLB sidecar; keep the voxel files if you want them for
+                    other tools.
+                  </li>
+                  <li>
+                    <strong>Verify it in SplatIt.</strong> Refresh the scene list, open the scene,
+                    and try Walk mode. If carving produces no mesh or walking is blocked, move the
+                    seed to open floor space and check that the room walls are closed enough for
+                    external fill.
+                  </li>
+                </ol>
+                <p class="guide-warning">
+                  Voxel generation can require substantial GPU memory for large splats. If it runs
+                  out of memory, use a GPU-capable workstation or try a larger
+                  <code>--voxel-size</code> for a coarser, lower-detail collision mesh.
+                </p>
+                <p class="guide-note">
+                  Read the
+                  <a
+                    href="https://developer.playcanvas.com/user-manual/splat-transform/collision/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    PlayCanvas collision-generation guide
+                  </a>
+                  for voxel-size, fill, and troubleshooting options.
+                </p>
+              } @else {
+                <h3>Install SplatTransform and PlayCanvas tools</h3>
+                <p>
+                  SplatTransform is the local command-line tool used to create collision sidecars.
+                  It runs on Windows, macOS, and Linux with Node.js and npm.
+                </p>
+                <ol>
+                  <li>
+                    <strong>Install Node.js and npm.</strong> Download the current Node.js LTS
+                    installer or binary from
+                    <a
+                      href="https://nodejs.org/en/download"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      nodejs.org
+                    </a>
+                    and follow the instructions for your operating system:
+                    <ul>
+                      <li>
+                        <strong>Windows:</strong> choose the Windows Installer (.msi), run it, and
+                        leave the option to add Node.js to PATH enabled. Open a new PowerShell or
+                        Command Prompt window when installation finishes.
+                      </li>
+                      <li>
+                        <strong>macOS:</strong> choose the macOS Installer (.pkg) for your
+                        processor, run it, and then open a new Terminal window.
+                      </li>
+                      <li>
+                        <strong>Linux:</strong> choose the Linux binary for your processor or follow
+                        the Node.js instructions for your distribution. Add the Node.js binaries to
+                        PATH if your installer does not do that automatically, then open a new
+                        terminal.
+                      </li>
+                    </ul>
+                    <aside class="windows-policy-note" role="note">
+                      <strong>Important for Windows PowerShell:</strong>
+                      If PowerShell says scripts are disabled when you run npm, run this command
+                      under your own Windows account:
+                      <pre><code>Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser</code></pre>
+                      Confirm the prompt, then close and reopen PowerShell. This changes the policy
+                      for your account only; it is not needed in Command Prompt. If your
+                      organization manages this policy, ask its administrator instead.
+                    </aside>
+                  </li>
+                  <li>
+                    <strong>Check Node.js and npm.</strong> In the new terminal, run:
+                    <pre><code>node --version
+npm --version</code></pre>
+                    Both commands should print a version number.
+                  </li>
+                  <li>
+                    <strong>Install SplatTransform.</strong> Run this command on Windows, macOS, or
+                    Linux:
+                    <pre><code>npm install --global @playcanvas/splat-transform</code></pre>
+                    Verify that the command is available:
+                    <pre><code>splat-transform --version</code></pre>
+                    If the command is not found, reopen the terminal and check that npm's global
+                    executable directory is on PATH. On macOS or Linux, avoid fixing permissions by
+                    running npm with <code>sudo</code>; use a Node.js version manager or the npm
+                    documentation's global-install guidance instead.
+                  </li>
+                </ol>
+                <h4>Other PlayCanvas tools</h4>
+                <ul>
+                  <li>
+                    <a href="https://superspl.at/editor" target="_blank" rel="noopener noreferrer">
+                      SuperSplat Editor
+                    </a>
+                    runs in a browser; use it to inspect, clean, and edit splat scenes. No local
+                    installation is required.
+                  </li>
+                  <li>
+                    <a href="https://superspl.at/convert" target="_blank" rel="noopener noreferrer">
+                      SuperSplat Convert
+                    </a>
+                    runs SplatTransform conversions in the browser, so it is useful for one-off
+                    conversions without installing the CLI.
+                  </li>
+                  <li>
+                    The
+                    <a href="https://playcanvas.com/" target="_blank" rel="noopener noreferrer">
+                      PlayCanvas platform
+                    </a>
+                    provides browser-based tools for building interactive 3D applications. It is
+                    optional and is not required to generate a SplatIt collision sidecar.
+                  </li>
+                </ul>
+                <p class="guide-note">
+                  See the
+                  <a
+                    href="https://developer.playcanvas.com/user-manual/splat-transform/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    official SplatTransform documentation
+                  </a>
+                  and
+                  <a
+                    href="https://docs.npmjs.com/downloading-and-installing-node-js-and-npm"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    npm's Node.js installation guide
+                  </a>
+                  for details and troubleshooting.
+                </p>
+              }
+            </article>
+          }
+        </section>
+      }
+    </div>
+  </section>
+</div>

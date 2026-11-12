@@ -1,7 +1,8 @@
-import { Component, OnDestroy, OnInit, computed, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { DomSanitizer } from '@angular/platform-browser';
 import { Subscription } from 'rxjs';
+import { Appearance } from '../../core/services/appearance';
 import { SplatViewer } from '../splat-viewer/splat-viewer';
 import { SceneCatalogService, SplatScene } from '../scenes/scene-catalog';
 import { SceneSelectionService } from '../scenes/scene-selection.service';
@@ -13,8 +14,10 @@ import { SceneSelectionService } from '../scenes/scene-selection.service';
   styleUrl: './viewer-page.scss',
 })
 export class ViewerPage implements OnInit, OnDestroy {
+  readonly appearance = inject(Appearance);
   readonly scene = signal<SplatScene | undefined>(undefined);
   readonly signedSplatUrl = signal<string | null>(null);
+  readonly signedCollisionUrl = signal<string | null>(null);
   readonly trustedHtmlUrl = computed(() => {
     const url = this.signedSplatUrl();
     return url ? this.sanitizer.bypassSecurityTrustResourceUrl(url) : null;
@@ -49,6 +52,7 @@ export class ViewerPage implements OnInit, OnDestroy {
     const requestId = ++this.sceneRequestId;
     this.scene.set(undefined);
     this.signedSplatUrl.set(null);
+    this.signedCollisionUrl.set(null);
     this.error.set(null);
 
     if (!sceneId) {
@@ -72,9 +76,15 @@ export class ViewerPage implements OnInit, OnDestroy {
       }
 
       this.scene.set(selectedScene);
-      const signedUrl = await this.catalog.getSignedAssetUrl(sceneId);
+      const [signedUrl, collisionUrl] = await Promise.all([
+        this.catalog.getSignedAssetUrl(sceneId),
+        selectedScene.format === 'HTML'
+          ? Promise.resolve(null)
+          : this.catalog.getSignedCollisionUrl(sceneId),
+      ]);
       if (requestId === this.sceneRequestId) {
         this.signedSplatUrl.set(signedUrl);
+        this.signedCollisionUrl.set(collisionUrl);
       }
     } catch (error) {
       if (requestId === this.sceneRequestId) {

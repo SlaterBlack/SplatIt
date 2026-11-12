@@ -35,7 +35,10 @@
                 "output": "fonts/inter"
               }
             ],
-            "styles": ["src/styles.scss"]
+            "styles": [
+              "src/styles.scss",
+              "node_modules/@playcanvas/supersplat-viewer/dist/viewer.css"
+            ]
           },
           "configurations": {
             "production": {

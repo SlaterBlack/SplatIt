@@ -4,13 +4,90 @@
 
 .splat-viewer-stage {
   position: relative;
-  min-height: min(68vh, 720px);
+  position: relative;
+  width: 100%;
+  height: min(68vh, 720px);
+  min-height: 420px;
   overflow: hidden;
-  background: var(--color-primary-light);
+  background: #000;
+}
+
+.splat-viewer-canvas {
+  position: absolute;
+  inset: 0;
+}
+
+.splat-viewer-xr-controls {
+  position: absolute;
+  z-index: 20;
+  top: 0.75rem;
+  right: 0.75rem;
+  display: flex;
+  max-width: min(22rem, calc(100% - 1.5rem));
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  pointer-events: none;
+}
+
+.splat-viewer-xr-button,
+.splat-viewer-xr-note,
+.splat-viewer-xr-error {
+  border: 1px solid rgb(255 255 255 / 24%);
+  border-radius: var(--radius-md);
+  background: rgb(39 34 31 / 90%);
+  box-shadow: var(--shadow-md);
+  color: #fffaf0;
+  backdrop-filter: blur(12px);
+}
+
+.splat-viewer-xr-button {
+  min-height: 38px;
+  padding: 0.45rem 0.8rem;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  pointer-events: auto;
+
+  &:disabled {
+    cursor: wait;
+    opacity: 0.65;
+  }
+}
+
+.splat-viewer-xr-note,
+.splat-viewer-xr-error {
+  margin: 0;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  pointer-events: auto;
+}
+
+.splat-viewer-xr-error {
+  position: absolute;
+  z-index: 21;
+  top: 3.75rem;
+  right: 0.75rem;
+  max-width: min(22rem, calc(100% - 1.5rem));
+  border-color: var(--color-danger);
+}
+
+.splat-viewer-capability-note {
+  margin: var(--space-xs) 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+}
+
+.splat-viewer-error {
+  margin: var(--space-sm) 0 0;
+  color: var(--color-danger);
 }
 
 @media (max-width: 650px) {
   .splat-viewer-stage {
-    min-height: 60vh;
+    height: 60vh;
+    min-height: 360px;
   }
 }

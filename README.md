@@ -7,12 +7,14 @@ structure used by ClockIt and ManageIt, with a lavender-and-cream brand palette.
 ## Project layout
 
 ```text
-frontend/   Angular application, Spark viewer, and same-origin StoreIt proxy
+frontend/   Angular application, SuperSplat viewer, and same-origin StoreIt proxy
 ```
 
 The app opens on the **Scenes** tab, where available splats are shown as cards.
 Selecting one opens it in the **Viewer** tab. Scene files are listed from the
 StoreIt API, which reads `\\192.168.1.11\max resources\GaussianSplats`.
+Visitors sign in with their existing ClockedIn account; SplatIt uses its own
+lavender-and-cream login screen and SplatIt logo.
 
 The shared StoreIt API runs on port `4002` by default. SplatIt's local frontend
 uses port `2404`; production should proxy `/api` to StoreIt through the
@@ -70,6 +72,15 @@ directly inside the configured directory and one level of project subfolders.
 SuperSplat `.html` exports are also listed and displayed in a sandboxed iframe.
 The API does not scan deeper or follow directory links.
 
+The SplatIt viewer uses the official SuperSplat Viewer package, with WebGPU
+when available, automatic WebGL fallback, and high-precision rendering. To
+enable its walk mode, place an offline-generated collision mesh beside its
+source splat using the `<scene-name>.collision.glb` suffix; for example,
+`WBH_AMB.collision.glb` beside `WBH_AMB.sog`. StoreIt only checks for, signs,
+and serves that optional sidecar. Collision generation is not performed by
+StoreIt. Without a sidecar, orbit and fly modes remain available and the viewer
+explains that walking is unavailable.
+
 Configure StoreIt's `backend/.env`:
 
 ```dotenv
@@ -87,22 +98,25 @@ localhost through the SplatIt frontend proxy; for a different reverse proxy,
 trust only that proxy's address or subnet. The production proxy forwards the
 client IP so StoreIt's 120-requests-per-minute limit is applied per visitor.
 
-StoreIt exposes `GET /api/splatit/scenes` for the grid, a
-`GET /api/splatit/scenes/:id/access` endpoint that returns an HMAC-signed asset
-URL valid for five minutes, and `GET /api/splatit/assets/:id` for the file.
-Listing, signing, and asset requests require an allowed `Origin` or `Referer`.
+StoreIt exposes `GET /api/splatit/scenes` for the grid,
+`GET /api/splatit/scenes/:id/access` for a signed scene URL,
+`GET /api/splatit/scenes/:id/collision/access` for an optional signed collision
+URL, and asset endpoints for each. Scene listing and signed-URL issuance require
+a valid bearer token from the shared StoreIt login system and an allowed
+`Origin` or `Referer`. The viewer fetches scene files using their signed URLs,
+which expire after five minutes and are checked against the allowed origins.
 The frontend calls these routes through its same-origin `/api` proxy.
 
-Origin checks and short-lived URLs deter casual cross-site embedding and direct
-third-party viewer use; they are not strong authentication. A visitor who can
-view a scene can still inspect or capture its downloaded data, and non-browser
-clients can forge origin headers. Do not treat this as DRM for confidential
-assets. The current implementation does not encrypt splats. Configure the
-public reverse proxy with `Content-Security-Policy: frame-ancestors 'self'` (or
-an explicit trusted parent allowlist) to prevent other sites from framing the
-SplatIt page. Mount availability, file permissions, DNS, and production origins
-must be verified on the StoreIt host; the current development machine did not
-have the Bluey share mounted.
+Authentication gates SplatIt's pages and scene API, but it does not make viewed
+files confidential: an authenticated visitor can inspect or capture downloaded
+scene data, and a copied signed URL remains usable until it expires. Do not
+treat this as DRM. The current implementation does not encrypt splats.
+Configure the public reverse proxy with
+`Content-Security-Policy: frame-ancestors 'self'` (or an explicit trusted parent
+allowlist) to prevent other sites from framing the SplatIt page. Mount
+availability, file permissions, DNS, and production origins must be verified
+on the StoreIt host; the current development machine did not have the Bluey
+share mounted.
 
 ## Production
 
@@ -118,35 +132,34 @@ StoreIt. Set `STOREIT_API_URL`, `FRONTEND_HOST`, and `FRONTEND_PORT` in
 be running, and the host firewall must allow inbound TCP traffic on port 2404.
 For public access, restrict direct port access and put the server behind the
 public HTTPS reverse proxy, as with the other suites.
+After backend authentication changes, rebuild StoreIt and restart
+`storeit-backend.service` so the protected routes take effect.
 
-## Rendering stage
+## Rendering
 
-The first viewer stage uses:
-
-- `@sparkjsdev/spark` 2.4.0
-- `three` 0.180.0
-- Angular 21 and Vite-free Angular CLI builds
-
-Spark's current documentation shows `SplatLoader.loadAsync()` for progress-aware
-loading, `SplatMesh` for SOG/SPZ, and `SparkRenderer.onDirty` for on-demand
-rendering ([loading splats](https://sparkjs.dev/docs/loading-splats/),
-[SplatMesh](https://sparkjs.dev/docs/splat-mesh/),
-[on-demand rendering](https://sparkjs.dev/docs/on-demand-rendering/)).
-The Spark quick start and package registry were checked on 2026-11-10.
-
-The viewer now obtains a short-lived URL from StoreIt for each selected scene.
-The StoreIt service must be configured and the share mounted before the Scenes
-grid can populate.
+The viewer uses the official
+[`@playcanvas/supersplat-viewer`](https://github.com/playcanvas/supersplat-viewer)
+package and requests high-precision rendering. It chooses WebGPU when supported
+and falls back to WebGL; its built-in UI includes camera modes, walk controls
+when collision data is available, and color grading. Compression can reduce
+transfer size and can introduce quantization, but a renderer's precision,
+anti-aliasing, and post-processing can also affect perceived banding. The
+viewer can load either `.sog` or `.ply` so they can be compared on the same
+renderer; the original PLY may be much larger. Capability-aware AR and VR
+buttons are shown when the current viewer renderer supports them. WebXR requires
+a compatible headset/device, browser, and secure context (normally HTTPS); some
+devices may require the viewer's WebGL fallback.
 
 ## Planned stages
 
 - [x] Angular frontend structure, shared-suite shell styling, lavender/cream
-      tokens, and Stage 1 lazy-loaded rendering
-- [x] Orbit controls with damping, zoom limits, touch gestures, and focus picking
-- [x] Fly mode with keyboard movement and adjustable scroll-wheel speed
-- [x] Viewer toolbar, fullscreen, reset/frame shortcuts, expandable controls legend, and view-only
-      brightness, contrast, and saturation adjustments
+      tokens, and SuperSplat Viewer integration
+- [x] WebGPU rendering with WebGL fallback, high-precision rendering, and
+      SuperSplat built-in color-grading controls
+- [x] Signed optional collision sidecars for browser-side SuperSplat walk mode
 - [ ] Viewer camera presets
 - [x] StoreIt scene listing and signed asset URLs, origin allowlist, rate
       limiting, and deployment guidance
+- [x] Shared ClockedIn sign-in, SplatIt-branded login, and authenticated scene
+      listing and signed-URL issuance
 - [ ] Optional AES-GCM encryption and remaining CDN/CORS deployment validation

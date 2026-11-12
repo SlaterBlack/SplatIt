@@ -1,18 +1,10 @@
-import { Component, inject } from '@angular/core';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { SceneSelectionService } from './features/scenes/scene-selection.service';
+import { Component } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterLink, RouterLinkActive, RouterOutlet],
+  imports: [RouterOutlet],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
-export class App {
-  private readonly sceneSelection = inject(SceneSelectionService);
-
-  get viewerLink(): string[] {
-    const sceneId = this.sceneSelection.selectedSceneId();
-    return sceneId ? ['/viewer', sceneId] : ['/viewer'];
-  }
-}
+export class App {}

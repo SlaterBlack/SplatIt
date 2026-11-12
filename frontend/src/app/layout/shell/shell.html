@@ -1,0 +1,62 @@
+<header class="navbar">
+  <a class="navbar-brand" routerLink="/scenes" aria-label="SplatIt home">
+    <img src="/SplatItLogo_32.png" width="24" height="24" alt="" />
+    <span class="brand-name">Splat<span class="brand-accent">It</span></span>
+  </a>
+  <nav class="navbar-links" aria-label="Main navigation">
+    <a routerLink="/scenes" routerLinkActive="is-active" ariaCurrentWhenActive="page">Scenes</a>
+    <a
+      [routerLink]="viewerLink"
+      routerLinkActive="is-active"
+      ariaCurrentWhenActive="page"
+      [routerLinkActiveOptions]="{ exact: false }"
+      >Viewer</a
+    >
+  </nav>
+  <div class="navbar-user">
+    @if (auth.currentUser(); as user) {
+      <div class="account-menu">
+        <button
+          class="account-menu-trigger"
+          type="button"
+          aria-haspopup="menu"
+          [attr.aria-expanded]="isAccountMenuOpen()"
+          (click)="toggleAccountMenu()"
+        >
+          {{ user.name }}
+          <span aria-hidden="true">⌄</span>
+        </button>
+        @if (isAccountMenuOpen()) {
+          <div class="account-menu-panel" role="menu">
+            <button type="button" role="menuitem" data-action="guides" (click)="openGuides()">
+              Guides
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              data-action="appearance"
+              (click)="openAppearance()"
+            >
+              Appearance
+            </button>
+            <button type="button" role="menuitem" (click)="logout()">Log out</button>
+          </div>
+        }
+      </div>
+    } @else {
+      <span>Account</span>
+    }
+  </div>
+</header>
+
+<main class="page-content">
+  <router-outlet />
+</main>
+
+@if (isAppearanceOpen()) {
+  <app-appearance-dialog (close)="closeAppearance()" />
+}
+
+@if (isGuidesOpen()) {
+  <app-guides-dialog (close)="closeGuides()" />
+}

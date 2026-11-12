@@ -1,0 +1,42 @@
+<main class="login-page">
+  <section class="login-card card" aria-labelledby="login-title">
+    <a class="login-brand" routerLink="/login">
+      <img src="/SplatItLogo_64.png" width="56" height="56" alt="" />
+      <span>Splat<span class="brand-accent">It</span></span>
+    </a>
+    <p class="eyebrow">Immersive visualisation</p>
+    <h1 id="login-title">Sign in</h1>
+    @if (sessionMessage) {
+      <div class="login-notice" role="status">{{ sessionMessage }}</div>
+    }
+    @if (errorMessage()) {
+      <div class="login-error" role="alert">{{ errorMessage() }}</div>
+    }
+
+    <form (ngSubmit)="submit()">
+      <label class="form-field">
+        Email
+        <input
+          type="email"
+          name="email"
+          [(ngModel)]="email"
+          autocomplete="username"
+          required
+        />
+      </label>
+      <label class="form-field">
+        Password
+        <input
+          type="password"
+          name="password"
+          [(ngModel)]="password"
+          autocomplete="current-password"
+          required
+        />
+      </label>
+      <button class="btn btn-primary login-submit" type="submit" [disabled]="isSubmitting()">
+        {{ isSubmitting() ? 'Signing in…' : 'Sign in' }}
+      </button>
+    </form>
+  </section>
+</main>
