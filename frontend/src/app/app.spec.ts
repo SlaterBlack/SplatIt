@@ -127,12 +127,18 @@ describe('App', () => {
     (compiled.querySelector('.account-menu-trigger') as HTMLButtonElement).click();
     fixture.detectChanges();
     expect(compiled.querySelector('.account-menu-panel')?.textContent).toContain('Install App');
-    expect(compiled.querySelector('a[routerLink="/profile"]')?.textContent).toContain(
-      'My account',
-    );
+    expect(compiled.querySelector('a[routerLink="/profile"]')?.textContent).toContain('My account');
     (compiled.querySelector('[data-action="appearance"]') as HTMLButtonElement).click();
     fixture.detectChanges();
     expect(compiled.querySelector('[data-theme-trigger]')?.textContent).toContain('Default');
+    (compiled.querySelector('[data-theme-trigger]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(compiled.querySelector('[data-theme-option="retro"]')?.textContent).toContain('Retro');
+    (compiled.querySelector('[data-theme-option="retro"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(appearance.theme()).toBe('retro');
+    expect(localStorage.getItem('splatit_theme')).toBe('retro');
+    expect(document.documentElement.dataset['theme']).toBe('retro');
 
     (compiled.querySelector('.background-select-trigger') as HTMLButtonElement).click();
     fixture.detectChanges();

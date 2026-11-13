@@ -41,11 +41,15 @@
 .scene-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 290px), 1fr));
-  align-items: start;
+  grid-auto-rows: 1fr;
+  align-items: stretch;
   gap: var(--space-lg);
 }
 
 .scene-option {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
   overflow: hidden;
   padding: 0;
 }
@@ -89,6 +93,9 @@
 }
 
 .scene-option-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
   padding: var(--space-lg);
 
   h2 {
@@ -116,6 +123,7 @@
 
 .scene-open-link {
   min-width: 110px;
+  margin-top: auto;
   text-decoration: none;
 }
 

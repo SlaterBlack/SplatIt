@@ -1,18 +1,22 @@
 :root {
   --color-bg: #faf4e9;
   --color-surface: #fffaf0;
-  --color-primary: #9B8AC4;
-  --color-primary-dark: #5B497F;
+  --color-primary: #9b8ac4;
+  --color-primary-dark: #5b497f;
   --color-primary-light: #eee9f6;
   --color-secondary: #d9cfea;
-  --color-accent: #5B497F;
+  --color-accent: #5b497f;
   --color-accent-light: #eee9f6;
-  --color-contrast: #F5EBD8;
+  --color-contrast: #f5ebd8;
   --color-danger: #b4232c;
   --color-success: #397653;
   --color-border: color-mix(in srgb, var(--color-secondary) 70%, var(--color-surface));
   --color-text: #493b63;
   --color-text-muted: #6e6480;
+  --navbar-account-bg: #fffcf5;
+  --navbar-account-border: #d6b79d;
+  --navbar-account-text: #3d2b20;
+  --navbar-account-hover: #faf4e9;
 
   --space-xs: 0.25rem;
   --space-sm: 0.5rem;
@@ -27,4 +31,31 @@
   --radius-lg: 16px;
   --shadow-sm: 0 1px 2px rgb(52 42 64 / 6%);
   --shadow-md: 0 4px 12px rgb(52 42 64 / 8%);
+}
+
+html[data-theme='retro'] {
+  --font-family-base: 'VT323', monospace;
+  --color-bg: #100b19;
+  --color-surface: #21152f;
+  --color-primary: #c4a0ff;
+  --color-primary-dark: #36205c;
+  --color-primary-light: #3b2759;
+  --color-secondary: #b298df;
+  --color-accent: #d0b4ff;
+  --color-accent-light: #3b2759;
+  --color-contrast: #140c20;
+  --color-success: #8affc5;
+  --color-danger: #ff809e;
+  --color-border: #6f5595;
+  --color-text: #eee2ff;
+  --color-text-muted: #b5a0d4;
+  --navbar-account-bg: #21152f;
+  --navbar-account-border: #6f5595;
+  --navbar-account-text: #eee2ff;
+  --navbar-account-hover: #3b2759;
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --shadow-sm: 2px 2px 0 rgb(0 0 0 / 35%);
+  --shadow-md: 3px 3px 0 rgb(0 0 0 / 40%);
 }

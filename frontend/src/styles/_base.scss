@@ -30,6 +30,29 @@
   src: url('/fonts/inter/inter-latin-700-normal.woff2') format('woff2');
 }
 
+@font-face {
+  font-family: 'VT323';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/vt323/vt323-latin-400-normal.woff2') format('woff2');
+}
+
+html[data-theme='retro'] :is(button, .btn) {
+  border-radius: 0;
+}
+
+html[data-theme='retro'] :is(h1, h2, h3) {
+  letter-spacing: 0;
+}
+
+html[data-theme='retro'] body {
+  font-synthesis: none;
+  -webkit-font-smoothing: auto;
+  -moz-osx-font-smoothing: auto;
+  text-rendering: auto;
+}
+
 * {
   box-sizing: border-box;
 }

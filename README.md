@@ -16,7 +16,9 @@ StoreIt API, which reads `\\192.168.1.11\max resources\GaussianSplats`.
 Visitors sign in with their existing ClockedIn account; SplatIt uses its own
 lavender-and-cream login screen and SplatIt logo.
 The account menu provides app installation, account profile editing, Guides,
-and Appearance. The theme is currently **Default**; the appearance dialog also
+and Appearance. Themes include **Default** and **Retro**, which uses a
+terminal-style VT323 typeface, square corners, and a dark purple phosphor
+palette. The appearance dialog also
 retains the independent viewer-background selector. The production frontend
 includes a web app manifest and service worker for supported browser installs.
 

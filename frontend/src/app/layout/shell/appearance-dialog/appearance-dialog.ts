@@ -22,8 +22,8 @@ export class AppearanceDialog {
 
   get selectedThemeName(): string {
     return (
-      this.appearance.themeOptions.find((option) => option.value === this.appearance.theme())?.name ??
-      'Default'
+      this.appearance.themeOptions.find((option) => option.value === this.appearance.theme())
+        ?.name ?? 'Default'
     );
   }
 
@@ -68,5 +68,4 @@ export class AppearanceDialog {
     this.appearance.setViewerBackgroundColor(color);
     this.isBackgroundMenuOpen.set(false);
   }
-
 }

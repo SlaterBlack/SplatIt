@@ -3,7 +3,10 @@ import { computed, Injectable, signal } from '@angular/core';
 const STORAGE_KEY = 'splatit_viewer_background';
 const THEME_STORAGE_KEY = 'splatit_theme';
 const DEFAULT_THEME = 'default';
-const THEME_OPTIONS = [{ name: 'Default', value: DEFAULT_THEME }] as const;
+const THEME_OPTIONS = [
+  { name: 'Default', value: DEFAULT_THEME },
+  { name: 'Retro', value: 'retro' },
+] as const;
 
 export const VIEWER_BACKGROUND_OPTIONS = [
   { name: 'Black', value: '#000000' },

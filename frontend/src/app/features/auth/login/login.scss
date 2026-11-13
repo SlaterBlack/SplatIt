@@ -4,8 +4,16 @@
   place-items: center;
   padding: clamp(var(--space-md), 4vw, var(--space-xl));
   background:
-    radial-gradient(ellipse at 18% 12%, color-mix(in srgb, var(--color-primary) 22%, transparent), transparent 34rem),
-    radial-gradient(ellipse at 85% 88%, color-mix(in srgb, var(--color-accent) 9%, transparent), transparent 28rem),
+    radial-gradient(
+      ellipse at 18% 12%,
+      color-mix(in srgb, var(--color-primary) 22%, transparent),
+      transparent 34rem
+    ),
+    radial-gradient(
+      ellipse at 85% 88%,
+      color-mix(in srgb, var(--color-accent) 9%, transparent),
+      transparent 28rem
+    ),
     var(--color-bg);
 }
 
@@ -14,6 +22,10 @@
   padding: clamp(var(--space-lg), 5vw, 2.75rem);
   border-color: color-mix(in srgb, var(--color-primary-dark) 18%, var(--color-border));
   background: color-mix(in srgb, var(--color-surface) 94%, white);
+}
+
+html[data-theme='retro'] .login-card {
+  background: var(--color-surface);
 }
 
 .login-brand {
@@ -75,7 +87,7 @@ h1 {
 
 .login-error {
   border: 1px solid color-mix(in srgb, var(--color-danger) 35%, transparent);
-  background: color-mix(in srgb, var(--color-danger) 8%, white);
+  background: color-mix(in srgb, var(--color-danger) 8%, var(--color-surface));
   color: var(--color-danger);
 }
 
