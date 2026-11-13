@@ -1,3 +1,4 @@
+import { HttpClient } from '@angular/common/http';
 import { Component, ElementRef, HostListener, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { Auth } from '../../core/services/auth';
@@ -11,6 +12,43 @@ interface InstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>;
 }
 
+interface LinkedService {
+  id: string;
+  name: string;
+  url: string;
+  logoUrl: string;
+}
+
+interface ServiceDirectoryResponse {
+  services: LinkedService[];
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function isHttpUrl(value: unknown): value is string {
+  if (typeof value !== 'string') return false;
+  try {
+    return ['http:', 'https:'].includes(new URL(value).protocol);
+  } catch {
+    return false;
+  }
+}
+
+function isServiceDirectoryResponse(value: unknown): value is ServiceDirectoryResponse {
+  if (!isRecord(value) || !Array.isArray(value['services'])) return false;
+  return value['services'].every((service: unknown) => {
+    if (!isRecord(service)) return false;
+    return (
+      typeof service['id'] === 'string' &&
+      typeof service['name'] === 'string' &&
+      isHttpUrl(service['url']) &&
+      isHttpUrl(service['logoUrl'])
+    );
+  });
+}
+
 @Component({
   selector: 'app-shell',
   imports: [AppearanceDialog, GuidesDialog, RouterLink, RouterLinkActive, RouterOutlet],
@@ -19,11 +57,15 @@ interface InstallPromptEvent extends Event {
 })
 export class Shell {
   readonly auth = inject(Auth);
+  private readonly http = inject(HttpClient);
   readonly appearance = inject(Appearance);
   private readonly router = inject(Router);
   private readonly elementRef = inject(ElementRef<HTMLElement>);
   private readonly sceneSelection = inject(SceneSelectionService);
   readonly isAccountMenuOpen = signal(false);
+  readonly isServiceMenuOpen = signal(false);
+  readonly availableServices = signal<LinkedService[]>([]);
+  readonly serviceMenuState = signal<'idle' | 'loading' | 'loaded' | 'error'>('idle');
   readonly isAppearanceOpen = signal(false);
   readonly isGuidesOpen = signal(false);
   readonly isInstallHelpOpen = signal(false);
@@ -31,6 +73,7 @@ export class Shell {
   readonly isStandalone = signal(this.detectStandalone());
 
   private installPrompt: InstallPromptEvent | null = null;
+  private readonly serviceId = 'splatit';
 
   get viewerLink(): string[] {
     const sceneId = this.sceneSelection.selectedSceneId();
@@ -39,6 +82,7 @@ export class Shell {
 
   logout(): void {
     this.closeAccountMenu();
+    this.closeServiceMenu();
     this.auth.logout();
     void this.router.navigateByUrl('/login');
   }
@@ -73,16 +117,37 @@ export class Shell {
     this.installError.set(null);
   }
 
-  toggleAccountMenu(): void {
-    this.isAccountMenuOpen.update((open) => !open);
-  }
-
   closeAccountMenu(): void {
     this.isAccountMenuOpen.set(false);
   }
 
+  toggleAccountMenu(): void {
+    this.closeServiceMenu();
+    this.isAccountMenuOpen.update((open) => !open);
+  }
+
+  toggleServiceMenu(): void {
+    if (this.isServiceMenuOpen()) {
+      this.closeServiceMenu();
+      return;
+    }
+
+    this.closeAccountMenu();
+    this.isServiceMenuOpen.set(true);
+    if (this.serviceMenuState() !== 'loading') this.loadServices();
+  }
+
+  closeServiceMenu(): void {
+    this.isServiceMenuOpen.set(false);
+  }
+
+  retryServiceLoad(): void {
+    this.loadServices();
+  }
+
   openAppearance(): void {
     this.closeAccountMenu();
+    this.closeServiceMenu();
     this.closeGuides();
     this.isAppearanceOpen.set(true);
   }
@@ -93,6 +158,7 @@ export class Shell {
 
   openGuides(): void {
     this.closeAccountMenu();
+    this.closeServiceMenu();
     this.closeAppearance();
     this.isGuidesOpen.set(true);
   }
@@ -103,7 +169,10 @@ export class Shell {
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
-    if (event.target instanceof Node && !this.elementRef.nativeElement.contains(event.target)) {
+    if (!(event.target instanceof Node)) return;
+    const serviceSwitcher = this.elementRef.nativeElement.querySelector('.service-switcher');
+    if (!serviceSwitcher?.contains(event.target)) this.closeServiceMenu();
+    if (!this.elementRef.nativeElement.contains(event.target)) {
       this.closeAccountMenu();
     }
   }
@@ -111,6 +180,7 @@ export class Shell {
   @HostListener('document:keydown.escape')
   onEscape(): void {
     this.closeAccountMenu();
+    this.closeServiceMenu();
     this.closeAppearance();
     this.closeGuides();
     this.closeInstallHelp();
@@ -147,5 +217,27 @@ export class Shell {
       window.matchMedia('(display-mode: standalone)').matches;
     const isIosStandalone = (window.navigator as Navigator & { standalone?: boolean }).standalone;
     return isDisplayModeStandalone || isIosStandalone === true;
+  }
+
+  private loadServices(): void {
+    this.serviceMenuState.set('loading');
+    this.http.get<unknown>('/api/services').subscribe({
+      next: (response) => {
+        if (!isServiceDirectoryResponse(response)) {
+          this.handleServiceLoadError(new Error('StoreIt returned an invalid service list.'));
+          return;
+        }
+        this.availableServices.set(
+          response.services.filter((service) => service.id !== this.serviceId),
+        );
+        this.serviceMenuState.set('loaded');
+      },
+      error: (error: unknown) => this.handleServiceLoadError(error),
+    });
+  }
+
+  private handleServiceLoadError(error: unknown): void {
+    console.error('Could not load linked services from StoreIt.', error);
+    this.serviceMenuState.set('error');
   }
 }

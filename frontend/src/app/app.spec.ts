@@ -2,6 +2,8 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { signal } from '@angular/core';
 import { of } from 'rxjs';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideHttpClient } from '@angular/common/http';
 import { App } from './app';
 import { routes } from './app.routes';
 import { Appearance } from './core/services/appearance';
@@ -30,6 +32,8 @@ describe('App', () => {
       imports: [App],
       providers: [
         provideRouter(routes),
+        provideHttpClient(),
+        provideHttpClientTesting(),
         {
           provide: Auth,
           useValue: {
@@ -58,6 +62,45 @@ describe('App', () => {
     const fixture = TestBed.createComponent(App);
     const app = fixture.componentInstance;
     expect(app).toBeTruthy();
+  });
+
+  it('shows links to other running services from StoreIt', async () => {
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+    await TestBed.inject(Router).navigateByUrl('/scenes');
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    fixture.nativeElement.querySelector('.service-switcher .navbar-brand').click();
+    fixture.detectChanges();
+
+    TestBed.inject(HttpTestingController)
+      .expectOne('/api/services')
+      .flush({
+        services: [
+          {
+            id: 'splatit',
+            name: 'SplatIt',
+            url: 'https://splatit.ai3d.com.au/',
+            logoUrl: 'https://splatit.ai3d.com.au/SplatItLogo_32.png',
+          },
+          {
+            id: 'clockit',
+            name: 'ClockIt',
+            url: 'https://clockit.ai3d.com.au:2400/',
+            logoUrl: 'https://clockit.ai3d.com.au:2400/ClockItLogo_32x32.png',
+          },
+        ],
+      });
+    fixture.detectChanges();
+
+    const link = fixture.nativeElement.querySelector('.service-menu-item') as HTMLAnchorElement;
+    expect(fixture.nativeElement.querySelectorAll('.service-menu-item')).toHaveLength(1);
+    expect(link.href).toBe('https://clockit.ai3d.com.au:2400/');
+    expect(link.textContent).toContain('ClockIt');
+    expect(link.querySelector('img')?.src).toBe(
+      'https://clockit.ai3d.com.au:2400/ClockItLogo_32x32.png',
+    );
   });
 
   it('shows scene cards and a separate viewer tab', async () => {
