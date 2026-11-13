@@ -7,7 +7,7 @@
     (click)="$event.stopPropagation()"
   >
     <h2 id="appearance-title">Appearance</h2>
-    <p>Choose your theme and the background color behind the 3D scene.</p>
+    <p>Choose a shared theme and the background color behind the 3D scene.</p>
     <div class="theme-field">
       <span id="theme-label">Theme</span>
       <div class="theme-select">
@@ -41,6 +41,11 @@
         }
       </div>
     </div>
+    @if (appearance.isSavingTheme()) {
+      <p class="theme-save-status" role="status">Saving this theme to your account…</p>
+    } @else if (appearance.themeSyncError()) {
+      <p class="theme-save-error" role="alert">{{ appearance.themeSyncError() }}</p>
+    }
     <div class="background-color-field">
       <span>Viewer background</span>
       <div class="background-select">

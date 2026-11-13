@@ -10,9 +10,13 @@ import { Appearance } from './core/services/appearance';
 import { Auth } from './core/services/auth';
 import { SceneCatalogService, SplatScene } from './features/scenes/scene-catalog';
 import { SceneSelectionService } from './features/scenes/scene-selection.service';
+import { UserTheme } from './core/models/user.model';
 
 describe('App', () => {
   let storedToken: string | null;
+  let storedAccountTheme: UserTheme;
+  let accountThemeSignal: ReturnType<typeof signal<UserTheme | null>>;
+  let accountThemeLoadedSignal: ReturnType<typeof signal<boolean>>;
 
   const testScenes: SplatScene[] = [
     {
@@ -26,6 +30,9 @@ describe('App', () => {
 
   beforeEach(async () => {
     storedToken = 'test-token';
+    storedAccountTheme = 'default';
+    accountThemeSignal = signal<UserTheme | null>(null);
+    accountThemeLoadedSignal = signal(false);
     localStorage.removeItem('splatit_viewer_background');
     localStorage.removeItem('splatit_theme');
     await TestBed.configureTestingModule({
@@ -37,10 +44,41 @@ describe('App', () => {
         {
           provide: Auth,
           useValue: {
-            currentUser: signal({ id: 'user-1', name: 'Test User', email: 'test@example.com' }),
+            currentUser: signal({
+              id: 'user-1',
+              name: 'Test User',
+              email: 'test@example.com',
+              theme: storedAccountTheme,
+            }),
+            accountTheme: accountThemeSignal,
+            accountThemeLoaded: accountThemeLoadedSignal,
             getToken: () => storedToken,
-            fetchCurrentUser: () =>
-              of({ user: { id: 'user-1', name: 'Test User', email: 'test@example.com' } }),
+            fetchCurrentUser: () => {
+              accountThemeSignal.set(storedAccountTheme);
+              accountThemeLoadedSignal.set(true);
+              return of({
+                user: {
+                  id: 'user-1',
+                  name: 'Test User',
+                  email: 'test@example.com',
+                  theme: storedAccountTheme,
+                },
+              });
+            },
+            updateProfile: (changes: { theme?: UserTheme }) => {
+              if (changes.theme) {
+                storedAccountTheme = changes.theme;
+                accountThemeSignal.set(changes.theme);
+              }
+              return of({
+                user: {
+                  id: 'user-1',
+                  name: 'Test User',
+                  email: 'test@example.com',
+                  theme: storedAccountTheme,
+                },
+              });
+            },
             logout: () => {},
           },
         },
@@ -180,6 +218,7 @@ describe('App', () => {
     (compiled.querySelector('[data-theme-option="retro"]') as HTMLButtonElement).click();
     fixture.detectChanges();
     expect(appearance.theme()).toBe('retro');
+    expect(storedAccountTheme).toBe('retro');
     expect(localStorage.getItem('splatit_theme')).toBe('retro');
     expect(document.documentElement.dataset['theme']).toBe('retro');
 
@@ -203,6 +242,18 @@ describe('App', () => {
     (compiled.querySelector('[aria-label="Black"]') as HTMLButtonElement).click();
     fixture.detectChanges();
     expect(appearance.viewerBackgroundColor()).toBe('#000000');
+  });
+
+  it('restores the saved account theme when the app loads', async () => {
+    storedAccountTheme = 'retro';
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+    await TestBed.inject(Router).navigateByUrl('/scenes');
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(TestBed.inject(Appearance).theme()).toBe('retro');
+    expect(document.documentElement.dataset['theme']).toBe('retro');
   });
 
   it('opens the collision generation guide from the account menu', async () => {

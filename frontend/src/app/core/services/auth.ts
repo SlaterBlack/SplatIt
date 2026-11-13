@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
 import { Observable, tap } from 'rxjs';
-import { AuthResponse, User } from '../models/user.model';
+import { AuthResponse, User, UserTheme } from '../models/user.model';
 
 const TOKEN_STORAGE_KEY = 'splatit_token';
 const USER_STORAGE_KEY = 'splatit_user';
@@ -11,6 +11,10 @@ export class Auth {
   private readonly http = inject(HttpClient);
   private readonly currentUserSignal = signal<User | null>(this.readStoredUser());
   readonly currentUser = this.currentUserSignal.asReadonly();
+  private readonly accountThemeSignal = signal<UserTheme | null>(null);
+  readonly accountTheme = this.accountThemeSignal.asReadonly();
+  private readonly accountThemeLoadedSignal = signal(false);
+  readonly accountThemeLoaded = this.accountThemeLoadedSignal.asReadonly();
 
   login(email: string, password: string): Observable<AuthResponse> {
     return this.http
@@ -19,12 +23,21 @@ export class Auth {
   }
 
   fetchCurrentUser(): Observable<{ user: User }> {
-    return this.http
-      .get<{ user: User }>('/api/auth/me')
-      .pipe(tap(({ user }) => this.storeUser(user)));
+    return this.http.get<{ user: User }>('/api/auth/me').pipe(
+      tap(({ user }) => {
+        this.storeUser(user);
+        this.accountThemeSignal.set(user.theme ?? null);
+        this.accountThemeLoadedSignal.set(true);
+      }),
+    );
   }
 
-  updateProfile(changes: { name?: string; email?: string; password?: string }): Observable<{ user: User }> {
+  updateProfile(changes: {
+    name?: string;
+    email?: string;
+    password?: string;
+    theme?: UserTheme;
+  }): Observable<{ user: User }> {
     return this.http
       .patch<{ user: User }>('/api/auth/me', changes)
       .pipe(tap(({ user }) => this.storeUser(user)));
@@ -38,11 +51,15 @@ export class Auth {
     localStorage.removeItem(TOKEN_STORAGE_KEY);
     localStorage.removeItem(USER_STORAGE_KEY);
     this.currentUserSignal.set(null);
+    this.accountThemeSignal.set(null);
+    this.accountThemeLoadedSignal.set(false);
   }
 
   private storeAuthResponse(response: AuthResponse): void {
     localStorage.setItem(TOKEN_STORAGE_KEY, response.token);
     this.storeUser(response.user);
+    this.accountThemeSignal.set(response.user.theme ?? null);
+    this.accountThemeLoadedSignal.set(true);
   }
 
   private storeUser(user: User): void {
