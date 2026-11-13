@@ -1,10 +1,23 @@
-<div class="splat-viewer-stage" [style.backgroundColor]="backgroundColor()">
+<div
+  class="splat-viewer-stage"
+  [class.splat-viewer-stage--expanded]="isExpanded()"
+  [style.backgroundColor]="backgroundColor()"
+>
   <div
     #viewerContainer
     class="splat-viewer-canvas"
     aria-label="Interactive Gaussian splat scene"
   ></div>
   @if (isLoaded()) {
+    <button
+      class="splat-viewer-fullscreen-button"
+      type="button"
+      [attr.aria-label]="isExpanded() ? 'Exit fullscreen viewer' : 'Expand viewer to fullscreen'"
+      [attr.aria-pressed]="isExpanded()"
+      (click)="toggleFullscreen()"
+    >
+      {{ isExpanded() ? 'Exit fullscreen' : 'Fullscreen' }}
+    </button>
     <div class="splat-viewer-xr-controls" aria-label="Immersive viewing controls">
       @if (xrMode(); as activeMode) {
         <button

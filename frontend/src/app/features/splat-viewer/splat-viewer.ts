@@ -49,6 +49,7 @@ export class SplatViewer implements AfterViewInit, OnChanges, OnDestroy {
   readonly xrMode = signal<XrMode | null>(null);
   readonly xrRequestPending = signal(false);
   readonly xrError = signal<string | null>(null);
+  readonly isExpanded = signal(false);
 
   private viewer?: ViewerHandle;
   private viewInitialized = false;
@@ -77,9 +78,29 @@ export class SplatViewer implements AfterViewInit, OnChanges, OnDestroy {
     this.destroyViewer();
   }
 
+  async toggleFullscreen(): Promise<void> {
+    if (this.isExpanded()) {
+      this.isExpanded.set(false);
+      return;
+    }
+
+    const viewer = this.viewer;
+    if (!viewer) {
+      return;
+    }
+
+    try {
+      await viewer.requestFullscreen();
+    } catch (error) {
+      console.warn('Native fullscreen is unavailable; using the expanded viewer layout.', error);
+      this.isExpanded.set(true);
+    }
+  }
+
   private async initializeViewer(): Promise<void> {
     const initializationId = ++this.initializationId;
     this.destroyViewer();
+    this.isExpanded.set(false);
     this.isLoaded.set(false);
     this.hasCollision.set(false);
     this.walkAllowed.set(false);
@@ -154,11 +175,28 @@ export class SplatViewer implements AfterViewInit, OnChanges, OnDestroy {
     } catch (error) {
       if (initializationId === this.initializationId) {
         console.error('Could not initialize the SuperSplat viewer.', error);
-        this.errorMessage.set(
-          error instanceof Error ? error.message : 'Could not load this scene.',
-        );
+        this.errorMessage.set(this.getInitializationErrorMessage(error));
       }
     }
+  }
+
+  private getInitializationErrorMessage(error: unknown): string {
+    const cause = error instanceof Error ? error.message : 'Unknown viewer initialization error.';
+    if (!/webgl|webgpu|graphics|context|adapter|device/i.test(cause)) {
+      return cause;
+    }
+
+    const canvas = document.createElement('canvas');
+    const webgl2 = canvas.getContext('webgl2');
+    const webgl2Available = webgl2 !== null;
+    webgl2?.getExtension('WEBGL_lose_context')?.loseContext();
+    const webgpuApiAvailable = 'gpu' in navigator;
+
+    return `Could not create a graphics device. WebGL 2: ${
+      webgl2Available ? 'available' : 'unavailable'
+    }; WebGPU API: ${webgpuApiAvailable ? 'detected' : 'not detected'}; secure context: ${
+      window.isSecureContext ? 'yes' : 'no'
+    }. ${cause}`;
   }
 
   startXR(mode: XrMode): void {

@@ -38,13 +38,33 @@
       </header>
       @if (signedSplatUrl(); as splatUrl) {
         @if (selectedScene.format === 'HTML') {
-          <iframe
-            class="supersplat-frame"
-            [src]="trustedHtmlUrl()"
-            [title]="selectedScene.title + ' SuperSplat viewer'"
-            sandbox="allow-scripts allow-pointer-lock"
-            referrerpolicy="origin"
-          ></iframe>
+          <div
+            class="supersplat-frame-stage"
+            [class.supersplat-frame-stage--expanded]="htmlViewerExpanded()"
+          >
+            <button
+              class="viewer-fullscreen-button"
+              type="button"
+              [attr.aria-label]="
+                htmlViewerExpanded()
+                  ? 'Exit fullscreen viewer'
+                  : 'Expand viewer to fullscreen'
+              "
+              [attr.aria-pressed]="htmlViewerExpanded()"
+              (click)="toggleHtmlViewerFullscreen()"
+            >
+              {{ htmlViewerExpanded() ? 'Exit fullscreen' : 'Fullscreen' }}
+            </button>
+            <iframe
+              class="supersplat-frame"
+              [src]="trustedHtmlUrl()"
+              [title]="selectedScene.title + ' SuperSplat viewer'"
+              sandbox="allow-scripts allow-pointer-lock"
+              allow="fullscreen"
+              allowfullscreen
+              referrerpolicy="origin"
+            ></iframe>
+          </div>
         } @else {
           <app-splat-viewer
             [splatUrl]="splatUrl"

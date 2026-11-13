@@ -47,6 +47,10 @@ html[data-theme='retro'] .login-card {
   }
 }
 
+.login-page.retro .login-brand {
+  color: var(--color-accent);
+}
+
 .brand-accent {
   color: var(--color-primary);
 }
@@ -91,6 +95,10 @@ h1 {
   color: var(--color-danger);
 }
 
+.login-page.retro .login-error {
+  color: var(--color-text);
+}
+
 .form-field {
   display: grid;
   gap: var(--space-xs);
@@ -125,4 +133,8 @@ h1 {
   &:hover:not(:disabled) {
     background: color-mix(in srgb, var(--color-primary-dark) 88%, black);
   }
+}
+
+.login-page.retro .login-submit {
+  color: var(--color-text);
 }

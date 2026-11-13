@@ -24,6 +24,7 @@ export class ViewerPage implements OnInit, OnDestroy {
   });
   readonly loadingScene = signal(false);
   readonly error = signal<string | null>(null);
+  readonly htmlViewerExpanded = signal(false);
 
   private routeSubscription?: Subscription;
   private sceneRequestId = 0;
@@ -48,11 +49,16 @@ export class ViewerPage implements OnInit, OnDestroy {
     this.routeSubscription?.unsubscribe();
   }
 
+  toggleHtmlViewerFullscreen(): void {
+    this.htmlViewerExpanded.update((expanded) => !expanded);
+  }
+
   private async loadScene(sceneId: string | null): Promise<void> {
     const requestId = ++this.sceneRequestId;
     this.scene.set(undefined);
     this.signedSplatUrl.set(null);
     this.signedCollisionUrl.set(null);
+    this.htmlViewerExpanded.set(false);
     this.error.set(null);
 
     if (!sceneId) {

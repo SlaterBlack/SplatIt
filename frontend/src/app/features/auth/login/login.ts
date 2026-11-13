@@ -4,6 +4,7 @@ import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Auth } from '../../../core/services/auth';
+import { Appearance } from '../../../core/services/appearance';
 
 @Component({
   selector: 'app-login',
@@ -13,6 +14,7 @@ import { Auth } from '../../../core/services/auth';
 })
 export class Login {
   private readonly auth = inject(Auth);
+  readonly appearance = inject(Appearance);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
