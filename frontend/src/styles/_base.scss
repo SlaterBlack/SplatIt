@@ -42,8 +42,7 @@ body {
 
 body {
   margin: 0;
-  background:
-    radial-gradient(ellipse at 82% 4%, rgb(196 178 222 / 20%), transparent 34rem), var(--color-bg);
+  background: var(--color-bg);
   color: var(--color-text);
   font-family: var(--font-family-base);
   font-size: var(--font-size-base);

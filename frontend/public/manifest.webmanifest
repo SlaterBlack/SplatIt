@@ -1,0 +1,24 @@
+{
+  "name": "SplatIt",
+  "short_name": "SplatIt",
+  "description": "Explore Gaussian splat scenes.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#F5EBD8",
+  "theme_color": "#8b72b5",
+  "icons": [
+    {
+      "src": "/SplatItLogo_192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/SplatItLogo_512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

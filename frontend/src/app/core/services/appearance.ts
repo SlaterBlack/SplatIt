@@ -1,6 +1,9 @@
 import { computed, Injectable, signal } from '@angular/core';
 
 const STORAGE_KEY = 'splatit_viewer_background';
+const THEME_STORAGE_KEY = 'splatit_theme';
+const DEFAULT_THEME = 'default';
+const THEME_OPTIONS = [{ name: 'Default', value: DEFAULT_THEME }] as const;
 
 export const VIEWER_BACKGROUND_OPTIONS = [
   { name: 'Black', value: '#000000' },
@@ -9,6 +12,7 @@ export const VIEWER_BACKGROUND_OPTIONS = [
 ] as const;
 
 export type ViewerBackgroundColor = (typeof VIEWER_BACKGROUND_OPTIONS)[number]['value'];
+export type Theme = (typeof THEME_OPTIONS)[number]['value'];
 
 const DEFAULT_BACKGROUND: ViewerBackgroundColor = '#000000';
 const BACKGROUND_LABELS: Record<ViewerBackgroundColor, string> = {
@@ -36,11 +40,45 @@ function readBackgroundColor(): ViewerBackgroundColor {
   return DEFAULT_BACKGROUND;
 }
 
+function isTheme(value: string): value is Theme {
+  return THEME_OPTIONS.some((option) => option.value === value);
+}
+
+function readTheme(): Theme {
+  const storedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+  if (storedTheme === null) {
+    return DEFAULT_THEME;
+  }
+  if (isTheme(storedTheme)) {
+    return storedTheme;
+  }
+
+  console.error('Stored SplatIt theme is unsupported; resetting to Default.');
+  localStorage.removeItem(THEME_STORAGE_KEY);
+  return DEFAULT_THEME;
+}
+
 @Injectable({ providedIn: 'root' })
 export class Appearance {
   readonly backgroundOptions = VIEWER_BACKGROUND_OPTIONS;
+  readonly themeOptions = THEME_OPTIONS;
+  readonly theme = signal<Theme>(readTheme());
   readonly viewerBackgroundColor = signal<ViewerBackgroundColor>(readBackgroundColor());
   readonly viewerBackgroundName = computed(() => BACKGROUND_LABELS[this.viewerBackgroundColor()]);
+
+  constructor() {
+    document.documentElement.dataset['theme'] = this.theme();
+  }
+
+  setTheme(value: string): void {
+    if (!isTheme(value)) {
+      throw new Error('Theme must be one of the available options.');
+    }
+
+    localStorage.setItem(THEME_STORAGE_KEY, value);
+    this.theme.set(value);
+    document.documentElement.dataset['theme'] = value;
+  }
 
   setViewerBackgroundColor(color: string): void {
     const normalizedColor = color.toUpperCase();

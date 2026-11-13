@@ -25,6 +25,7 @@ describe('App', () => {
   beforeEach(async () => {
     storedToken = 'test-token';
     localStorage.removeItem('splatit_viewer_background');
+    localStorage.removeItem('splatit_theme');
     await TestBed.configureTestingModule({
       imports: [App],
       providers: [
@@ -120,12 +121,18 @@ describe('App', () => {
 
     const appearance = TestBed.inject(Appearance);
     expect(appearance.viewerBackgroundColor()).toBe('#000000');
+    expect(appearance.theme()).toBe('default');
 
     const compiled = fixture.nativeElement as HTMLElement;
     (compiled.querySelector('.account-menu-trigger') as HTMLButtonElement).click();
     fixture.detectChanges();
+    expect(compiled.querySelector('.account-menu-panel')?.textContent).toContain('Install App');
+    expect(compiled.querySelector('a[routerLink="/profile"]')?.textContent).toContain(
+      'My account',
+    );
     (compiled.querySelector('[data-action="appearance"]') as HTMLButtonElement).click();
     fixture.detectChanges();
+    expect(compiled.querySelector('[data-theme-trigger]')?.textContent).toContain('Default');
 
     (compiled.querySelector('.background-select-trigger') as HTMLButtonElement).click();
     fixture.detectChanges();

@@ -24,6 +24,12 @@ export class Auth {
       .pipe(tap(({ user }) => this.storeUser(user)));
   }
 
+  updateProfile(changes: { name?: string; email?: string; password?: string }): Observable<{ user: User }> {
+    return this.http
+      .patch<{ user: User }>('/api/auth/me', changes)
+      .pipe(tap(({ user }) => this.storeUser(user)));
+  }
+
   getToken(): string | null {
     return localStorage.getItem(TOKEN_STORAGE_KEY);
   }
@@ -62,7 +68,14 @@ export class Auth {
         'email' in user &&
         typeof user.email === 'string'
       ) {
-        return { id: user.id, name: user.name, email: user.email };
+        return {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          ...('role' in user && (user.role === 'admin' || user.role === 'user')
+            ? { role: user.role }
+            : {}),
+        };
       }
 
       throw new Error('Stored user profile is invalid.');

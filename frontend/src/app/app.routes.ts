@@ -4,6 +4,7 @@ import { Login } from './features/auth/login/login';
 import { Shell } from './layout/shell/shell';
 import { ScenesPage } from './features/scenes/scenes-page';
 import { ViewerPage } from './features/viewer/viewer-page';
+import { Profile } from './features/profile/profile';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -16,6 +17,7 @@ export const routes: Routes = [
       { path: 'scenes', component: ScenesPage },
       { path: 'viewer', component: ViewerPage },
       { path: 'viewer/:sceneId', component: ViewerPage },
+      { path: 'profile', component: Profile },
       { path: '**', redirectTo: 'scenes' },
     ],
   },

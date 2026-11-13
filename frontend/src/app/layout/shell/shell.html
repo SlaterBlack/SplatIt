@@ -23,11 +23,22 @@
           [attr.aria-expanded]="isAccountMenuOpen()"
           (click)="toggleAccountMenu()"
         >
-          {{ user.name }}
-          <span aria-hidden="true">⌄</span>
+          <span class="account-menu-name">{{ user.name }}</span>
+          <svg
+            class="account-menu-chevron"
+            viewBox="0 0 16 16"
+            fill="none"
+            aria-hidden="true"
+          >
+            <path d="m4 6 4 4 4-4" />
+          </svg>
         </button>
         @if (isAccountMenuOpen()) {
           <div class="account-menu-panel" role="menu">
+            @if (!isStandalone()) {
+              <button type="button" role="menuitem" (click)="installApp()">Install App</button>
+            }
+            <a routerLink="/profile" role="menuitem" (click)="closeAccountMenu()">My account</a>
             <button type="button" role="menuitem" data-action="guides" (click)="openGuides()">
               Guides
             </button>
@@ -59,4 +70,36 @@
 
 @if (isGuidesOpen()) {
   <app-guides-dialog (close)="closeGuides()" />
+}
+
+@if (isInstallHelpOpen()) {
+  <div class="install-dialog-backdrop" (click)="closeInstallHelp()">
+    <section
+      class="install-dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="install-title"
+      (click)="$event.stopPropagation()"
+    >
+      <h2 id="install-title">Install SplatIt</h2>
+      @if (installError()) {
+        <p class="error-text" role="alert">{{ installError() }}</p>
+      }
+      @if (isAppleDevice) {
+        <p>To add SplatIt to your iPhone or iPad home screen:</p>
+        <ol>
+          <li>In Safari, tap <strong>Share</strong>.</li>
+          <li>Choose <strong>Add to Home Screen</strong>.</li>
+          <li>Tap <strong>Add</strong> to confirm.</li>
+        </ol>
+      } @else if (isAndroidDevice) {
+        <p>In Chrome, tap the three-dot menu, choose <strong>Install app</strong> (or <strong>Add to Home screen</strong>), then confirm.</p>
+      } @else {
+        <p>In Chrome, use the install icon in the address bar or choose <strong>Install SplatIt</strong> from the browser menu.</p>
+      }
+      <div class="install-dialog-actions">
+        <button class="btn btn-primary" type="button" (click)="closeInstallHelp()">Got it</button>
+      </div>
+    </section>
+  </div>
 }

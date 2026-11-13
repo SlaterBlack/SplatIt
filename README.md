@@ -15,6 +15,10 @@ Selecting one opens it in the **Viewer** tab. Scene files are listed from the
 StoreIt API, which reads `\\192.168.1.11\max resources\GaussianSplats`.
 Visitors sign in with their existing ClockedIn account; SplatIt uses its own
 lavender-and-cream login screen and SplatIt logo.
+The account menu provides app installation, account profile editing, Guides,
+and Appearance. The theme is currently **Default**; the appearance dialog also
+retains the independent viewer-background selector. The production frontend
+includes a web app manifest and service worker for supported browser installs.
 
 The shared StoreIt API runs on port `4002` by default. SplatIt's local frontend
 uses port `2404`; production should proxy `/api` to StoreIt through the

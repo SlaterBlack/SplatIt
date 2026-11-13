@@ -17,7 +17,25 @@ export class AppearanceDialog {
 
   readonly appearance = inject(Appearance);
   readonly isBackgroundMenuOpen = signal(false);
+  readonly isThemeMenuOpen = signal(false);
   readonly backgroundMenuPosition = signal<BackgroundMenuPosition>({ top: 0, left: 0, width: 0 });
+
+  get selectedThemeName(): string {
+    return (
+      this.appearance.themeOptions.find((option) => option.value === this.appearance.theme())?.name ??
+      'Default'
+    );
+  }
+
+  toggleThemeMenu(): void {
+    this.isBackgroundMenuOpen.set(false);
+    this.isThemeMenuOpen.update((open) => !open);
+  }
+
+  selectTheme(value: string): void {
+    this.appearance.setTheme(value);
+    this.isThemeMenuOpen.set(false);
+  }
 
   toggleBackgroundMenu(event: MouseEvent): void {
     if (this.isBackgroundMenuOpen()) {
@@ -25,6 +43,7 @@ export class AppearanceDialog {
       return;
     }
 
+    this.isThemeMenuOpen.set(false);
     const target = event.currentTarget;
     if (!(target instanceof HTMLElement)) {
       throw new Error('The background menu trigger is not an HTML element.');
@@ -49,4 +68,5 @@ export class AppearanceDialog {
     this.appearance.setViewerBackgroundColor(color);
     this.isBackgroundMenuOpen.set(false);
   }
+
 }
