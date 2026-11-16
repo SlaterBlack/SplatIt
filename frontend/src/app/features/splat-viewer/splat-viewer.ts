@@ -9,8 +9,17 @@ import {
   input,
   signal,
 } from '@angular/core';
+import type { SparkRenderer, SplatMesh } from '@sparkjsdev/spark';
 import type { ViewerHandle, XrMode } from '@playcanvas/supersplat-viewer/viewer';
 import type { ExperienceSettings } from '@playcanvas/supersplat-viewer/settings';
+import type { MindARThree } from 'mind-ar/dist/mindar-image-three.prod.js';
+
+interface ImageTargetARSession {
+  mindAR?: MindARThree;
+  sparkRenderer?: SparkRenderer;
+  splatMesh?: SplatMesh;
+  targetUrl?: string;
+}
 
 function hexToRgb(color: string): [number, number, number] {
   if (!/^#[\da-f]{6}$/i.test(color)) {
@@ -33,6 +42,12 @@ export class SplatViewer implements AfterViewInit, OnChanges, OnDestroy {
   @ViewChild('viewerContainer', { static: true })
   private readonly viewerContainer!: ElementRef<HTMLElement>;
 
+  @ViewChild('imageTargetDialog', { static: true })
+  private readonly imageTargetDialog!: ElementRef<HTMLDialogElement>;
+
+  @ViewChild('imageTargetStage', { static: true })
+  private readonly imageTargetStage!: ElementRef<HTMLElement>;
+
   readonly splatUrl = input.required<string>();
   readonly splatFileName = input.required<string>();
   readonly collisionUrl = input<string | null>(null);
@@ -49,11 +64,18 @@ export class SplatViewer implements AfterViewInit, OnChanges, OnDestroy {
   readonly xrMode = signal<XrMode | null>(null);
   readonly xrRequestPending = signal(false);
   readonly xrError = signal<string | null>(null);
-  readonly isExpanded = signal(false);
+  readonly imageTargetArLoading = signal(false);
+  readonly imageTargetArStatus = signal('');
+  readonly imageTargetArError = signal<string | null>(null);
+  readonly imageTargetFound = signal(false);
 
   private viewer?: ViewerHandle;
   private viewInitialized = false;
   private initializationId = 0;
+  private imageTargetRequestId = 0;
+  private imageTargetARSession?: ImageTargetARSession;
+  private compiledTargetData?: Uint8Array;
+  private targetCompilation?: Promise<Uint8Array>;
 
   ngAfterViewInit(): void {
     this.viewInitialized = true;
@@ -75,32 +97,152 @@ export class SplatViewer implements AfterViewInit, OnChanges, OnDestroy {
 
   ngOnDestroy(): void {
     this.initializationId += 1;
+    this.imageTargetRequestId += 1;
+    this.disposeImageTargetAR(this.imageTargetARSession);
+    if (this.imageTargetDialog.nativeElement.open) {
+      this.imageTargetDialog.nativeElement.close();
+    }
     this.destroyViewer();
   }
 
-  async toggleFullscreen(): Promise<void> {
-    if (this.isExpanded()) {
-      this.isExpanded.set(false);
+  async startImageTargetAR(): Promise<void> {
+    if (this.imageTargetArLoading()) {
       return;
     }
 
-    const viewer = this.viewer;
-    if (!viewer) {
+    const dialog = this.imageTargetDialog.nativeElement;
+    if (!dialog.open) {
+      if (typeof dialog.showModal === 'function') {
+        dialog.showModal();
+      } else {
+        dialog.setAttribute('open', '');
+      }
+    }
+
+    const requestId = ++this.imageTargetRequestId;
+    const session: ImageTargetARSession = {};
+    this.imageTargetARSession = session;
+    this.imageTargetArLoading.set(true);
+    this.imageTargetArStatus.set('Preparing the SplatIt image target…');
+    this.imageTargetArError.set(null);
+    this.imageTargetFound.set(false);
+
+    if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
+      this.imageTargetArLoading.set(false);
+      this.imageTargetArError.set(
+        'Image-target AR requires a secure HTTPS connection and a browser with camera access.',
+      );
       return;
     }
 
     try {
-      await viewer.requestFullscreen();
+      const [{ MindARThree }, { SparkRenderer, SplatMesh }, THREE] = await Promise.all([
+        import('mind-ar/dist/mindar-image-three.prod.js'),
+        import('@sparkjsdev/spark'),
+        import('three'),
+      ]);
+      if (!this.isCurrentImageTargetRequest(requestId, session)) {
+        return;
+      }
+
+      const targetData = await this.getCompiledTargetData();
+      if (!this.isCurrentImageTargetRequest(requestId, session)) {
+        return;
+      }
+
+      const targetBuffer = new ArrayBuffer(targetData.byteLength);
+      new Uint8Array(targetBuffer).set(targetData);
+      session.targetUrl = URL.createObjectURL(
+        new Blob([targetBuffer], { type: 'application/octet-stream' }),
+      );
+
+      const mindAR = new MindARThree({
+        container: this.imageTargetStage.nativeElement,
+        imageTargetSrc: session.targetUrl,
+        maxTrack: 1,
+        uiLoading: 'no',
+        uiScanning: 'no',
+        uiError: 'no',
+      });
+      session.mindAR = mindAR;
+      mindAR.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+
+      const sparkRenderer = new SparkRenderer({ renderer: mindAR.renderer });
+      session.sparkRenderer = sparkRenderer;
+      mindAR.scene.add(sparkRenderer);
+
+      const splatMesh = new SplatMesh({
+        url: this.splatUrl(),
+        fileName: this.splatFileName(),
+        maxSplats: 750_000,
+        onProgress: (event) => {
+          if (this.isCurrentImageTargetRequest(requestId, session) && event.lengthComputable) {
+            const percent = Math.round((event.loaded / event.total) * 100);
+            this.imageTargetArStatus.set(`Loading scene… ${percent}%`);
+          }
+        },
+      });
+      session.splatMesh = splatMesh;
+
+      const anchor = mindAR.addAnchor(0);
+      anchor.group.add(splatMesh);
+      anchor.onTargetFound = () => {
+        if (this.isCurrentImageTargetRequest(requestId, session)) {
+          this.imageTargetFound.set(true);
+        }
+      };
+      anchor.onTargetLost = () => {
+        if (this.isCurrentImageTargetRequest(requestId, session)) {
+          this.imageTargetFound.set(false);
+        }
+      };
+
+      this.imageTargetArStatus.set('Requesting camera access and loading the scene…');
+      await Promise.all([mindAR.start(), splatMesh.initialized]);
+      if (!this.isCurrentImageTargetRequest(requestId, session)) {
+        this.disposeImageTargetAR(session);
+        return;
+      }
+
+      this.fitSplatToTarget(splatMesh, THREE);
+      this.imageTargetArStatus.set('Point the camera at the SplatIt target card.');
+      this.imageTargetArLoading.set(false);
     } catch (error) {
-      console.warn('Native fullscreen is unavailable; using the expanded viewer layout.', error);
-      this.isExpanded.set(true);
+      this.disposeImageTargetAR(session);
+      if (requestId !== this.imageTargetRequestId) {
+        return;
+      }
+
+      console.error('Could not start image-target AR.', error);
+      this.imageTargetArError.set(this.getImageTargetARError(error));
+      this.imageTargetArLoading.set(false);
     }
+  }
+
+  endImageTargetAR(): void {
+    this.imageTargetRequestId += 1;
+    this.disposeImageTargetAR(this.imageTargetARSession);
+    this.imageTargetArLoading.set(false);
+    this.imageTargetArStatus.set('');
+    this.imageTargetArError.set(null);
+    this.imageTargetFound.set(false);
+
+    const dialog = this.imageTargetDialog.nativeElement;
+    if (dialog.open) {
+      dialog.close();
+    } else {
+      dialog.removeAttribute('open');
+    }
+  }
+
+  cancelImageTargetAR(event: Event): void {
+    event.preventDefault();
+    this.endImageTargetAR();
   }
 
   private async initializeViewer(): Promise<void> {
     const initializationId = ++this.initializationId;
     this.destroyViewer();
-    this.isExpanded.set(false);
     this.isLoaded.set(false);
     this.hasCollision.set(false);
     this.walkAllowed.set(false);
@@ -242,6 +384,101 @@ export class SplatViewer implements AfterViewInit, OnChanges, OnDestroy {
     this.viewer = undefined;
   }
 
+  private async getCompiledTargetData(): Promise<Uint8Array> {
+    if (this.compiledTargetData) {
+      return this.compiledTargetData;
+    }
+
+    if (!this.targetCompilation) {
+      const compilation = (async () => {
+        const { Compiler } = await import('mind-ar/dist/mindar-image.prod.js');
+        const image = new Image();
+        image.src = new URL('assets/splatit-ar-target.svg', document.baseURI).href;
+        await image.decode();
+
+        const compiler = new Compiler();
+        await compiler.compileImageTargets([image], (progress) => {
+          if (this.imageTargetArLoading() && this.imageTargetDialog.nativeElement.open) {
+            this.imageTargetArStatus.set(`Preparing image target… ${Math.round(progress)}%`);
+          }
+        });
+        this.compiledTargetData = compiler.exportData();
+        return this.compiledTargetData;
+      })();
+      this.targetCompilation = compilation;
+      void compilation.catch(() => {
+        if (this.targetCompilation === compilation) {
+          this.targetCompilation = undefined;
+        }
+      });
+    }
+
+    return this.targetCompilation;
+  }
+
+  private isCurrentImageTargetRequest(requestId: number, session: ImageTargetARSession): boolean {
+    return requestId === this.imageTargetRequestId && this.imageTargetARSession === session;
+  }
+
+  private fitSplatToTarget(mesh: SplatMesh, three: typeof import('three')): void {
+    const bounds = mesh.getBoundingBox();
+    if (bounds.isEmpty()) {
+      throw new Error('The selected scene does not contain renderable splats.');
+    }
+
+    const size = bounds.getSize(new three.Vector3());
+    const maxDimension = Math.max(size.x, size.y, size.z);
+    if (!Number.isFinite(maxDimension) || maxDimension <= 0) {
+      throw new Error('The selected scene has invalid dimensions for image-target AR.');
+    }
+
+    const center = bounds.getCenter(new three.Vector3());
+    const scale = 0.65 / maxDimension;
+    mesh.scale.setScalar(scale);
+    mesh.position.set(-center.x * scale, -center.y * scale, -center.z * scale + 0.03);
+  }
+
+  private getImageTargetARError(error: unknown): string {
+    if (error instanceof DOMException) {
+      if (error.name === 'NotAllowedError' || error.name === 'SecurityError') {
+        return 'Camera access was denied. Allow camera access for SplatIt in your browser settings, then try again.';
+      }
+      if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
+        return 'No camera was found on this device.';
+      }
+    }
+
+    const cause = error instanceof Error ? error.message : 'Unknown AR startup error.';
+    return `Could not start image-target AR. ${cause}`;
+  }
+
+  private disposeImageTargetAR(session?: ImageTargetARSession): void {
+    if (!session) {
+      return;
+    }
+
+    session.splatMesh?.dispose();
+    session.sparkRenderer?.dispose();
+    session.mindAR?.controller?.dispose();
+
+    const stream = session.mindAR?.video?.srcObject;
+    if (typeof MediaStream !== 'undefined' && stream instanceof MediaStream) {
+      stream.getTracks().forEach((track) => track.stop());
+    }
+
+    session.mindAR?.video?.remove();
+    session.mindAR?.renderer.dispose();
+    session.mindAR?.renderer.domElement.remove();
+    session.mindAR?.cssRenderer.domElement.remove();
+    if (session.targetUrl) {
+      URL.revokeObjectURL(session.targetUrl);
+    }
+
+    if (this.imageTargetARSession === session) {
+      this.imageTargetARSession = undefined;
+    }
+  }
+
   private applyBackgroundColor(): void {
     const viewer = this.viewer;
     if (!viewer || viewer.state.xrMode === 'ar') {
@@ -250,7 +487,9 @@ export class SplatViewer implements AfterViewInit, OnChanges, OnDestroy {
 
     const cameras = viewer.app.root.findComponents('camera');
     if (cameras.length === 0) {
-      console.error('Could not update the SplatIt background because the viewer camera is missing.');
+      console.error(
+        'Could not update the SplatIt background because the viewer camera is missing.',
+      );
       return;
     }
 

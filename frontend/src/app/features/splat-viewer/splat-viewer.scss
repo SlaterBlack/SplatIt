@@ -11,69 +11,27 @@
   background: #000;
 }
 
-.splat-viewer-stage--expanded {
-  position: fixed;
-  z-index: 1000;
-  inset: 0;
-  width: 100vw;
-  height: 100dvh;
-  min-height: 0;
-  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
-    env(safe-area-inset-left);
-  box-sizing: border-box;
-}
-
 .splat-viewer-canvas {
   position: absolute;
   inset: 0;
 }
 
-.splat-viewer-fullscreen-button {
-  position: absolute;
-  z-index: 21;
-  top: max(0.75rem, env(safe-area-inset-top));
-  left: max(0.75rem, env(safe-area-inset-left));
-  min-height: 38px;
-  padding: 0.45rem 0.8rem;
-  border: 1px solid rgb(255 255 255 / 24%);
-  border-radius: var(--radius-md);
-  background: rgb(39 34 31 / 90%);
-  box-shadow: var(--shadow-md);
-  color: #fffaf0;
-  cursor: pointer;
-  font: inherit;
-  font-size: 0.8rem;
-  font-weight: 600;
-  backdrop-filter: blur(12px);
-}
-
-.splat-viewer-xr-controls {
-  position: absolute;
-  z-index: 20;
-  top: 0.75rem;
-  right: 0.75rem;
-  display: flex;
-  max-width: min(22rem, calc(100% - 1.5rem));
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 0.5rem;
-  pointer-events: none;
-}
-
-.splat-viewer-xr-button,
-.splat-viewer-xr-note,
-.splat-viewer-xr-error {
-  border: 1px solid rgb(255 255 255 / 24%);
-  border-radius: var(--radius-md);
-  background: rgb(39 34 31 / 90%);
-  box-shadow: var(--shadow-md);
-  color: #fffaf0;
-  backdrop-filter: blur(12px);
+:host
+  ::ng-deep
+  .splat-viewer-canvas
+  :is(.sse-enterFullscreen, .sse-exitFullscreen, .sse-arMode, .sse-vrMode) {
+  display: none !important;
 }
 
 .splat-viewer-xr-button {
   min-height: 38px;
   padding: 0.45rem 0.8rem;
+  border: 1px solid rgb(255 255 255 / 24%);
+  border-radius: var(--radius-md);
+  background: rgb(39 34 31 / 90%);
+  box-shadow: var(--shadow-md);
+  color: #fffaf0;
+  backdrop-filter: blur(12px);
   cursor: pointer;
   font: inherit;
   font-size: 0.8rem;
@@ -86,22 +44,102 @@
   }
 }
 
-.splat-viewer-xr-note,
-.splat-viewer-xr-error {
+.splat-viewer-ar-dialog {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
   margin: 0;
-  padding: 0.6rem 0.75rem;
-  font-size: 0.75rem;
-  line-height: 1.4;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  background: transparent;
+  color: #fffaf0;
+
+  &::backdrop {
+    background: #080808;
+  }
+}
+
+.splat-viewer-ar-camera {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+
+  video {
+    z-index: 0 !important;
+  }
+
+  canvas {
+    z-index: 1;
+  }
+}
+
+.splat-viewer-ar-controls {
+  position: absolute;
+  z-index: 10;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: max(0.75rem, env(safe-area-inset-top)) max(0.75rem, env(safe-area-inset-right))
+    max(0.75rem, env(safe-area-inset-bottom)) max(0.75rem, env(safe-area-inset-left));
+  pointer-events: none;
+}
+
+.splat-viewer-ar-close,
+.splat-viewer-ar-card {
   pointer-events: auto;
 }
 
-.splat-viewer-xr-error {
-  position: absolute;
-  z-index: 21;
-  top: 3.75rem;
-  right: 0.75rem;
-  max-width: min(22rem, calc(100% - 1.5rem));
-  border-color: var(--color-danger);
+.splat-viewer-ar-card {
+  align-self: stretch;
+  max-width: 34rem;
+  margin: 0 auto;
+  padding: 0.9rem 1rem;
+  border: 1px solid rgb(255 255 255 / 24%);
+  border-radius: var(--radius-md);
+  background: rgb(39 34 31 / 92%);
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(12px);
+}
+
+.splat-viewer-ar-status,
+.splat-viewer-ar-error,
+.splat-viewer-ar-instructions {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+.splat-viewer-ar-error {
+  color: #ffb5a8;
+}
+
+.splat-viewer-ar-instructions {
+  margin-top: 0.35rem;
+  color: rgb(255 250 240 / 78%);
+  font-size: 0.75rem;
+}
+
+.splat-viewer-ar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.65rem;
+}
+
+.splat-viewer-ar-target-link {
+  color: #fffaf0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-underline-offset: 0.15em;
+  pointer-events: auto;
 }
 
 .splat-viewer-capability-note {

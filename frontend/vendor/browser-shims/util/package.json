@@ -1,0 +1,7 @@
+{
+  "name": "util",
+  "version": "1.0.0",
+  "description": "Browser globals used by MindAR's Node-only utility branch",
+  "main": "index.js",
+  "license": "MIT"
+}

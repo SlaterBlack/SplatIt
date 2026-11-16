@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <rect width="1024" height="1024" fill="#f3eee4"/>
+  <rect x="22" y="22" width="980" height="980" rx="18" fill="none" stroke="#181614" stroke-width="24"/>
+  <rect x="60" y="60" width="904" height="904" fill="none" stroke="#181614" stroke-width="4"/>
+  <path d="M92 118h158v158H92z" fill="#181614"/>
+  <path d="M112 138h118v118H112z" fill="#f3eee4"/>
+  <path d="M132 158h78v78h-78z" fill="#181614"/>
+  <path d="M772 92h158v32H772zM772 146h110v32H772zM772 200h140v32H772zM772 254h92v32H772z" fill="#181614"/>
+  <path d="M92 772h32v158H92zM146 812h32v118h-32zM200 782h32v148h-32zM254 830h32v100h-32z" fill="#181614"/>
+  <path d="M356 102h16v196h-16zM400 102h8v142h-8zM436 102h24v196h-24zM488 102h12v165h-12zM530 102h8v196h-8zM566 102h20v128h-20zM614 102h10v196h-10zM656 102h24v150h-24zM710 102h8v196h-8z" fill="#e4572e"/>
+  <path d="M354 330c0-25 20-45 45-45h216c25 0 45 20 45 45v110H354z" fill="#1e6f67"/>
+  <path d="M388 378c0-18 15-33 33-33h172c18 0 33 15 33 33v62H388z" fill="#f3eee4"/>
+  <path d="M406 392h32v32h-32zM456 392h16v32h-16zM490 392h42v32h-42zM550 392h20v32h-20zM590 392h20v32h-20z" fill="#181614"/>
+  <path d="M356 480h324v24H356zM356 526h230v16H356zM356 564h286v16H356z" fill="#181614"/>
+  <path d="M740 356h188v188H740z" fill="#e4572e"/>
+  <path d="M834 356 928 450 834 544 740 450z" fill="#f3eee4"/>
+  <circle cx="834" cy="450" r="36" fill="#181614"/>
+  <path d="M720 590h208v16H720zM720 626h164v16H720zM720 662h190v16H720z" fill="#1e6f67"/>
+  <text x="346" y="720" fill="#181614" font-family="Arial, Helvetica, sans-serif" font-size="96" font-weight="900" letter-spacing="-7">SPLAT</text>
+  <text x="350" y="790" fill="#e4572e" font-family="Arial, Helvetica, sans-serif" font-size="54" font-weight="800" letter-spacing="9">IT / AR</text>
+  <path d="M350 832h578v16H350zM350 870h404v16H350zM350 908h520v16H350z" fill="#181614"/>
+  <path d="M108 356h190v310H108z" fill="#1e6f67"/>
+  <path d="M130 380h146v64H130zM130 466h64v64h-64zM212 466h64v64h-64zM130 552h146v90H130z" fill="#f3eee4"/>
+  <circle cx="162" cy="412" r="14" fill="#e4572e"/>
+  <path d="M148 578h110v14H148zM148 608h78v14h-78z" fill="#181614"/>
+  <path d="M108 690h190v28H108zM108 738h142v18H108z" fill="#181614"/>
+</svg>

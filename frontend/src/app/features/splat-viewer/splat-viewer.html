@@ -1,75 +1,60 @@
-<div
-  class="splat-viewer-stage"
-  [class.splat-viewer-stage--expanded]="isExpanded()"
-  [style.backgroundColor]="backgroundColor()"
->
+<div class="splat-viewer-stage" [style.backgroundColor]="backgroundColor()">
   <div
     #viewerContainer
     class="splat-viewer-canvas"
     aria-label="Interactive Gaussian splat scene"
   ></div>
-  @if (isLoaded()) {
-    <button
-      class="splat-viewer-fullscreen-button"
-      type="button"
-      [attr.aria-label]="isExpanded() ? 'Exit fullscreen viewer' : 'Expand viewer to fullscreen'"
-      [attr.aria-pressed]="isExpanded()"
-      (click)="toggleFullscreen()"
-    >
-      {{ isExpanded() ? 'Exit fullscreen' : 'Fullscreen' }}
-    </button>
-    <div class="splat-viewer-xr-controls" aria-label="Immersive viewing controls">
-      @if (xrMode(); as activeMode) {
-        <button
-          class="splat-viewer-xr-button"
-          type="button"
-          [disabled]="xrRequestPending()"
-          (click)="endXR()"
-        >
-          @if (activeMode === 'ar') {
-            Exit AR
-          } @else {
-            Exit VR
-          }
-        </button>
-      } @else {
-        @if (canStartAR()) {
-          <button
-            class="splat-viewer-xr-button"
-            type="button"
-            [disabled]="xrRequestPending()"
-            (click)="startXR('ar')"
-          >
-            View in AR
-          </button>
-        }
-        @if (canStartVR()) {
-          <button
-            class="splat-viewer-xr-button"
-            type="button"
-            [disabled]="xrRequestPending()"
-            (click)="startXR('vr')"
-          >
-            Enter VR
-          </button>
-        }
-        @if (!canStartAR() && !canStartVR()) {
-          <p class="splat-viewer-xr-note" role="status">
-            @if (hasAR() || hasVR()) {
-              Immersive viewing is supported, but not on the current renderer. Check the SuperSplat
-              controls for an XR-compatible option.
-            } @else {
-              AR and VR need a compatible device, browser, and secure connection (HTTPS).
-            }
-          </p>
-        }
-      }
-    </div>
-  }
-  @if (xrError(); as error) {
-    <p class="splat-viewer-xr-error" role="alert">{{ error }}</p>
-  }
 </div>
+<dialog
+  #imageTargetDialog
+  class="splat-viewer-ar-dialog"
+  aria-label="SplatIt image-target AR"
+  (cancel)="cancelImageTargetAR($event)"
+>
+  <div #imageTargetStage class="splat-viewer-ar-camera"></div>
+  <div class="splat-viewer-ar-controls">
+    <button
+      class="splat-viewer-xr-button splat-viewer-ar-close"
+      type="button"
+      (click)="endImageTargetAR()"
+    >
+      Close AR
+    </button>
+    <section class="splat-viewer-ar-card" aria-live="polite">
+      @if (imageTargetFound()) {
+        <p class="splat-viewer-ar-status">
+          Target found. The scene is attached to the target card.
+        </p>
+      } @else if (imageTargetArError(); as error) {
+        <p class="splat-viewer-ar-error" role="alert">{{ error }}</p>
+      } @else {
+        <p class="splat-viewer-ar-status">{{ imageTargetArStatus() }}</p>
+      }
+      <p class="splat-viewer-ar-instructions">
+        Print the SplatIt target or show it on a second screen, then point the camera at it.
+      </p>
+      <div class="splat-viewer-ar-actions">
+        <a
+          class="splat-viewer-ar-target-link"
+          href="/assets/splatit-ar-target.svg"
+          download="splatit-ar-target.svg"
+        >
+          Download target card
+        </a>
+        @if (imageTargetArError()) {
+          <button
+            class="splat-viewer-xr-button"
+            type="button"
+            [disabled]="imageTargetArLoading()"
+            (click)="startImageTargetAR()"
+          >
+            Try again
+          </button>
+        }
+      </div>
+    </section>
+  </div>
+</dialog>
 @if (errorMessage(); as error) {
   <p class="splat-viewer-error" role="alert">{{ error }}</p>
 }

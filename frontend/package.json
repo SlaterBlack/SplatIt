@@ -3,10 +3,10 @@
   "version": "0.1.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve --host 0.0.0.0 --port 2404",
-    "build": "ng build",
-    "watch": "ng build --watch --configuration development",
-    "test": "ng test",
+    "start": "node scripts/patch-mind-ar.mjs && ng serve --host 0.0.0.0 --port 2404",
+    "build": "node scripts/patch-mind-ar.mjs && ng build",
+    "watch": "node scripts/patch-mind-ar.mjs && ng build --watch --configuration development",
+    "test": "node scripts/patch-mind-ar.mjs && ng test",
     "serve": "node server.js"
   },
   "packageManager": "npm@11.6.2",
@@ -22,19 +22,25 @@
     "@fontsource/inter": "^5.3.0",
     "@fontsource/vt323": "^5.3.0",
     "@playcanvas/supersplat-viewer": "^1.43.0",
+    "@sparkjsdev/spark": "^2.4.0",
     "express": "^5.3.0",
     "http-proxy-middleware": "^4.2.0",
+    "mind-ar": "^1.2.5",
     "playcanvas": "^2.24.0",
     "rxjs": "~7.8.0",
+    "three": "^0.180.0",
     "tslib": "^2.3.0"
   },
   "devDependencies": {
     "@angular/build": "^21.2.27",
     "@angular/cli": "^21.2.27",
     "@angular/compiler-cli": "^21.2.0",
+    "@types/three": "0.180.0",
+    "fs": "file:vendor/browser-shims/fs",
     "jsdom": "^28.0.0",
     "prettier": "^3.8.1",
     "typescript": "~5.9.2",
+    "util": "file:vendor/browser-shims/util",
     "vitest": "^4.0.8"
   }
 }
