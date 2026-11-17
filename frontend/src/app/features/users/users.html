@@ -47,6 +47,7 @@
         <select name="newRole" [ngModel]="newRole()" (ngModelChange)="newRole.set($event)">
           <option value="user">User</option>
           <option value="admin">Admin</option>
+          <option value="demo">Demo user</option>
         </select>
       </label>
       <button class="btn btn-primary" type="submit" [disabled]="isCreating()">
@@ -83,6 +84,7 @@
                   <select [ngModel]="editingRole()" (ngModelChange)="editingRole.set($event)">
                     <option value="user">User</option>
                     <option value="admin">Admin</option>
+                    <option value="demo">Demo user</option>
                   </select>
                 </label>
                 <label>

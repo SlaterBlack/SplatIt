@@ -1,5 +1,5 @@
 export type UserTheme = 'default' | 'retro';
-export type UserRole = 'admin' | 'user';
+export type UserRole = 'admin' | 'user' | 'demo';
 
 export interface User {
   id: string;

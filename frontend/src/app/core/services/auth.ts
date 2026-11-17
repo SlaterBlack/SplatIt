@@ -90,7 +90,8 @@ export class Auth {
           id: user.id,
           name: user.name,
           email: user.email,
-          ...('role' in user && (user.role === 'admin' || user.role === 'user')
+          ...('role' in user &&
+          (user.role === 'admin' || user.role === 'user' || user.role === 'demo')
             ? { role: user.role }
             : {}),
         };

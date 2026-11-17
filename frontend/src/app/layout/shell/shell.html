@@ -97,6 +97,10 @@
   </div>
 </header>
 
+@if (auth.currentUser()?.role === 'demo') {
+  <p class="demo-readonly-notice" role="status">Demo account · SplatIt scenes are view-only.</p>
+}
+
 <main class="page-content">
   <router-outlet />
 </main>
