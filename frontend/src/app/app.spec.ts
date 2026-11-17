@@ -44,6 +44,7 @@ describe('App', () => {
         {
           provide: Auth,
           useValue: {
+            isAdmin: () => false,
             currentUser: signal({
               id: 'user-1',
               name: 'Test User',

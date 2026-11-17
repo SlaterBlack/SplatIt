@@ -1,0 +1,137 @@
+<section class="users-page">
+  <header class="users-heading">
+    <p class="eyebrow">Admin settings</p>
+    <h1>Manage users</h1>
+    <p class="subtitle">Manage accounts and access to your shared services.</p>
+  </header>
+
+  <form class="card new-user-card" (ngSubmit)="createUser()">
+    <h2>Add user</h2>
+    <div class="new-user-form">
+      <label>
+        <span>Name</span>
+        <input
+          type="text"
+          autocomplete="name"
+          required
+          name="newName"
+          [ngModel]="newName()"
+          (ngModelChange)="newName.set($event)"
+        />
+      </label>
+      <label>
+        <span>Email</span>
+        <input
+          type="email"
+          autocomplete="email"
+          required
+          name="newEmail"
+          [ngModel]="newEmail()"
+          (ngModelChange)="newEmail.set($event)"
+        />
+      </label>
+      <label>
+        <span>Password</span>
+        <input
+          type="password"
+          autocomplete="new-password"
+          minlength="8"
+          required
+          name="newPassword"
+          [ngModel]="newPassword()"
+          (ngModelChange)="newPassword.set($event)"
+        />
+      </label>
+      <label>
+        <span>Role</span>
+        <select name="newRole" [ngModel]="newRole()" (ngModelChange)="newRole.set($event)">
+          <option value="user">User</option>
+          <option value="admin">Admin</option>
+        </select>
+      </label>
+      <button class="btn btn-primary" type="submit" [disabled]="isCreating()">
+        {{ isCreating() ? 'Adding…' : 'Add user' }}
+      </button>
+    </div>
+    @if (createError(); as error) {
+      <p class="error-text" role="alert">{{ error }}</p>
+    }
+  </form>
+
+  @if (isLoading()) {
+    <p role="status">Loading users…</p>
+  } @else if (listError(); as error) {
+    <div class="users-error">
+      <p class="error-text" role="alert">{{ error }}</p>
+      <button class="btn btn-secondary" type="button" (click)="loadUsers()">Try again</button>
+    </div>
+  } @else if (users().length === 0) {
+    <p class="empty-users">No users have been added.</p>
+  } @else {
+    <div class="user-list">
+      @for (user of users(); track user.id) {
+        <article class="card user-card">
+          <div class="user-row">
+            <div class="user-info">
+              <span class="user-name">{{ user.name }}</span>
+              <span class="user-email">{{ user.email }}</span>
+            </div>
+            @if (editingUserId() === user.id) {
+              <div class="user-edit-form">
+                <label>
+                  <span class="visually-hidden">Role for {{ user.name }}</span>
+                  <select [ngModel]="editingRole()" (ngModelChange)="editingRole.set($event)">
+                    <option value="user">User</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                </label>
+                <label>
+                  <span class="visually-hidden">New password for {{ user.name }}</span>
+                  <input
+                    type="password"
+                    autocomplete="new-password"
+                    minlength="8"
+                    placeholder="New password (optional)"
+                    [ngModel]="editingPassword()"
+                    (ngModelChange)="editingPassword.set($event)"
+                  />
+                </label>
+                <button
+                  class="btn btn-primary"
+                  type="button"
+                  [disabled]="busyUserId() === user.id"
+                  (click)="saveEditing(user)"
+                >
+                  Save
+                </button>
+                <button class="btn btn-secondary" type="button" (click)="cancelEditing()">
+                  Cancel
+                </button>
+              </div>
+            } @else {
+              <span class="role-badge" [class.role-badge-admin]="user.role === 'admin'">{{
+                user.role
+              }}</span>
+              <div class="user-actions">
+                <button class="btn btn-secondary" type="button" (click)="startEditing(user)">
+                  Edit
+                </button>
+                <button
+                  class="btn btn-danger"
+                  type="button"
+                  [disabled]="busyUserId() === user.id || user.id === currentUserId"
+                  (click)="deleteUser(user)"
+                >
+                  Delete
+                </button>
+              </div>
+            }
+          </div>
+          @if (rowError()?.id === user.id) {
+            <p class="error-text" role="alert">{{ rowError()?.message }}</p>
+          }
+        </article>
+      }
+    </div>
+  }
+</section>

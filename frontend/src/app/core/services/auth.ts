@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 import { AuthResponse, User, UserTheme } from '../models/user.model';
 
@@ -11,6 +11,7 @@ export class Auth {
   private readonly http = inject(HttpClient);
   private readonly currentUserSignal = signal<User | null>(this.readStoredUser());
   readonly currentUser = this.currentUserSignal.asReadonly();
+  readonly isAdmin = computed(() => this.currentUserSignal()?.role === 'admin');
   private readonly accountThemeSignal = signal<UserTheme | null>(null);
   readonly accountTheme = this.accountThemeSignal.asReadonly();
   private readonly accountThemeLoadedSignal = signal(false);

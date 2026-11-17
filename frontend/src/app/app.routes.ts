@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { adminGuard } from './core/guards/admin.guard';
 import { authGuard } from './core/guards/auth.guard';
 import { Login } from './features/auth/login/login';
 import { Shell } from './layout/shell/shell';
@@ -18,6 +19,11 @@ export const routes: Routes = [
       { path: 'viewer', component: ViewerPage },
       { path: 'viewer/:sceneId', component: ViewerPage },
       { path: 'profile', component: Profile },
+      {
+        path: 'users',
+        canActivate: [adminGuard],
+        loadComponent: () => import('./features/users/users').then((m) => m.Users),
+      },
       { path: '**', redirectTo: 'scenes' },
     ],
   },

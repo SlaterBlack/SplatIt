@@ -84,6 +84,9 @@
             >
               Appearance
             </button>
+            @if (auth.isAdmin()) {
+              <a routerLink="/users" role="menuitem" (click)="closeAccountMenu()">Manage users</a>
+            }
             <button type="button" role="menuitem" (click)="logout()">Log out</button>
           </div>
         }
